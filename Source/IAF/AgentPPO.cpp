@@ -2,6 +2,7 @@
 
 
 #include "AgentPPO.h"
+#include <torch/torch.h>
 
 // Sets default values for this component's properties
 UAgentPPO::UAgentPPO()
@@ -16,6 +17,7 @@ UAgentPPO::UAgentPPO()
 
 void UAgentPPO::MyTestFunction(FString SomeString)
 {
+	//torch::Tensor tensor = torch::rand({ 2, 3 });
 	UE_LOG(LogTemp, Log, TEXT("You wanted to say %s"), *SomeString);
 }
 
