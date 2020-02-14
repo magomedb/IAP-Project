@@ -45,10 +45,15 @@ public class IAF : ModuleRules
             isLibrarySupported = true;
 
             string PlatformString = (Target.Platform == UnrealTargetPlatform.Win64) ? "x64" : "x86";
-            string LibrariesPath = Path.Combine(ThirdPartyPath, "libtorch", "lib");
+            //string LibrariesPath = Path.Combine(ThirdPartyPath, "libtorch", "lib");
+            string LibrariesPath = Path.Combine(ThirdPartyPath, "tfc", "lib");
             // Include path
-            PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "libtorch", "include"));
-            PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "libtorch", "include", "torch", "csrc", "api", "include"));
+            //PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "libtorch", "include"));
+            //PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "libtorch", "include", "torch", "csrc", "api", "include"));
+
+            PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "tfc", "include"));
+
+
 
             /*
             test your path with:
@@ -57,20 +62,21 @@ public class IAF : ModuleRules
             */
 
             //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "BobsMagic." + PlatformString + ".lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "torch.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "c10.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "c10_cuda.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "caffe2_module_test_dynamic.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "caffe2_nvrtc.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "clog.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "cpuinfo.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "libprotobuf.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "libprotobuf-lite.lib"));
-            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "libprotoc.lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "torch.lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "c10.lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "c10_cuda.lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "caffe2_module_test_dynamic.lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "caffe2_nvrtc.lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "clog.lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "cpuinfo.lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "libprotobuf.lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "libprotobuf-lite.lib"));
+            //PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "libprotoc.lib"));
+            PublicAdditionalLibraries.Add(Path.Combine(LibrariesPath, "tensorflow.lib"));
 
             PublicLibraryPaths.Add(LibrariesPath);
 
-            PublicDelayLoadDLLs.AddRange(new string[] { "torch.dll" });
+            PublicDelayLoadDLLs.AddRange(new string[] { "tensorflow.dll" });
         }
 
         if (isLibrarySupported)
