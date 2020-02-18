@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import logging
+import unreal_engine as ue
 
 class CNN:
   """
@@ -13,7 +14,12 @@ class CNN:
     Args:
       params: a dictionary containing values of the models' parameters.
     """
+    self.scripts_path = ue.get_content_dir() + "Scripts"
+    self.model_directory = self.scripts_path + "/model"
 
+    self.modemodel_loaded = False
+
+    self.model_path = self.model_directory + "/model.ckpt"
     self.verbose = verbose
     self.num_actions = num_actions
 
@@ -68,11 +74,39 @@ class CNN:
     reg = self.reg * (tf.reduce_sum(tf.square(W1)) + tf.reduce_sum(tf.square(W2)) + tf.reduce_sum(tf.square(U)))
     return out, reg
 
+  def loadnn(self, input_placeholder):
+    saver = tf.train.import_meta_graph(self.model_path + ".meta")
+    ue.log('meta graph imported')
+    saver.restore(session, tf.train.latest_checkpoint(self.model_directory))
+    ue.log('graph restored')
+    self.model_loaded = True
 
+    #restore our weights
+    self.graph = tf.get_default_graph()
+    W1 = self.graph.get_tensor_by_name("W1:0")
+    b1 = self.graph.get_tensor_by_name("b1:0")
+    W2 = self.graph.get_tensor_by_name("W2:0")
+    b2 = self.graph.get_tensor_by_name("b2:0")
+    U = self.graph.get_tensor_by_name("U:0")
+    b3 = self.graph.get_tensor_by_name("b3:0")
+
+    xW = tf.matmul(self.input_placeholder, W1)
+    h = tf.tanh(tf.add(xW, b1))
+
+    xW = tf.matmul(h, W2)
+    h = tf.tanh(tf.add(xW, b2))
+
+    hU = tf.matmul(h, U)    
+    outputs = tf.add(hU, b3)
+
+    reg = self.reg * (tf.reduce_sum(tf.square(W1)) + tf.reduce_sum(tf.square(W2)) + tf.reduce_sum(tf.square(U)))
+    return outputs, reg
   def create_model(self):
     """
     The model definition.
     """
+    session = tf.Session()
+    ue.log('creating new model')
     self.input_placeholder, self.labels_placeholder, self.actions_placeholder = self.add_placeholders()
     outputs, reg = self.nn(self.input_placeholder)
     self.predictions = outputs
@@ -85,9 +119,9 @@ class CNN:
 
     self.train_op = optimizer.minimize(self.loss)
     init = tf.initialize_all_variables()
-    session = tf.Session()
+    self.saverino = tf.train.Saver()
     session.run(init)
-
+    ue.log('new session created')
     return session
 
   def train_step(self, Xs, ys, actions):
@@ -117,3 +151,8 @@ class CNN:
                   })
 
     return prediction_probs
+
+  def saveModel(self, inputQ, actionQ):
+    path = self.saverino.save(self.session, self.model_path)
+    ue.log("Saved model yes: "+str(path))
+    pass

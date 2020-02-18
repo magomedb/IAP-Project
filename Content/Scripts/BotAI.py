@@ -14,10 +14,10 @@ class ExampleAPI(TFPluginAPI):
 
 	#expected optional api: setup your model for training
 	def onSetup(self):
-		self.sess = tf.InteractiveSession()
+		#self.sess = tf.InteractiveSession()
 		#self.graph = tf.get_default_graph()
 
-		self.x = tf.placeholder(tf.float32)
+		#self.x = tf.placeholder(tf.float32)
 		
 		#self.paddleY = tf.placeholder(tf.float32)
 		#self.ballXY = tf.placeholder(tf.float32)
@@ -113,6 +113,9 @@ class ExampleAPI(TFPluginAPI):
 		#return selected action
 		return {'action':float(action)}
 
+	def saveModel(self, jsonInput):
+	    self.model.model.saveModel(self.inputQ, self.actionQ)
+	    pass
 
 	#expected optional api: start training your network
 	def onBeginTraining(self):
