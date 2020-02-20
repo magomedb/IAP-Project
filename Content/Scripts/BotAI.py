@@ -23,7 +23,7 @@ class ExampleAPI(TFPluginAPI):
 		#self.ballXY = tf.placeholder(tf.float32)
 		#self.score = tf.placeholder(tf.float32)
 
-		self.num_actions = 7
+		self.num_actions = 8
 
 		DEFAULT_EPISODES = 2000
 		DEFAULT_STEPS = 500 
@@ -48,7 +48,7 @@ class ExampleAPI(TFPluginAPI):
 		self.inputQ = collections.deque(maxlen=self.memory_capacity)
 		self.actionQ = collections.deque(maxlen=self.memory_capacity)
 
-		null_input = np.zeros(10)
+		null_input = np.zeros(12)
 		self.observation_shape = null_input.shape
 		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params)
 
@@ -71,14 +71,16 @@ class ExampleAPI(TFPluginAPI):
 		goalDist = jsonInput['goalDist']
 		botRot = jsonInput['rotation']
 		objList = jsonInput['surroundingObjects']
+		enemyDist = jsonInput['enemyDist']
+		enemyDir = jsonInput['enemyDir']
 		objListLength = len(objList) - 1
 		#ue.log("List type: " + str(type(jsonInput['surroundingObjects'])))
-		observation = [goalDist, botRot]
+		observation = [goalDist, botRot, enemyDist, enemyDir]
 		for i in range(8):
 			if i < objListLength:
 				observation.append(objList[i])
 			else:
-				observation.append(2000)
+				observation.append(4000)
 		reward = jsonInput['reward']
 
 		#convert to list and set as x placeholder
