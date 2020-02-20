@@ -61,8 +61,8 @@ class ExampleAPI(TFPluginAPI):
 		
 	#expected optional api: parse input object and return a result object, which will be converted to json for UE4
 	def onJsonInput(self, jsonInput):
-		
-		#debug action
+        #debug action
+		#ue.log(str(jsonInput))
 		action = randint(0,4)
 
 		#layer our input using deque ~200 frames so we can train with temporal data 
@@ -116,7 +116,8 @@ class ExampleAPI(TFPluginAPI):
 		return {'action':float(action)}
 
 	def saveModel(self, jsonInput):
-	    self.model.model.saveModel(self.inputQ, self.actionQ)
+	    folder = jsonInput
+	    self.model.model.saveModel(self.inputQ, self.actionQ, folder)
 	    pass
 
 	#expected optional api: start training your network

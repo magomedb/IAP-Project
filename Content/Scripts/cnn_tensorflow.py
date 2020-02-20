@@ -15,7 +15,7 @@ class CNN:
       params: a dictionary containing values of the models' parameters.
     """
     self.scripts_path = ue.get_content_dir() + "Scripts"
-    self.model_directory = self.scripts_path + "/model"
+    self.model_directory = self.scripts_path + "/models"
 
     self.modemodel_loaded = False
 
@@ -163,7 +163,8 @@ class CNN:
 
     return prediction_probs
 
-  def saveModel(self, inputQ, actionQ):
-    path = self.saverino.save(self.session, self.model_path)
-    ue.log("Saved model yes: "+str(path))
+  def saveModel(self, inputQ, actionQ, folder):
+    savePath = self.model_directory + "/" + folder + "/model.ckpt"
+    path = self.saverino.save(self.session, savePath)
+    ue.log("Saved model: "+str(savePath))
     pass
