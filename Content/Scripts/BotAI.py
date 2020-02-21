@@ -12,8 +12,10 @@ from dqn import DQN
 
 class ExampleAPI(TFPluginAPI):
 
-	#expected optional api: setup your model for training
 	def onSetup(self):
+		pass
+
+	def setupModel(self, jsonInput):
 		#self.sess = tf.InteractiveSession()
 		#self.graph = tf.get_default_graph()
 
@@ -50,14 +52,15 @@ class ExampleAPI(TFPluginAPI):
 
 		null_input = np.zeros(12)
 		self.observation_shape = null_input.shape
-		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params)
+		folder = jsonInput
+		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params, folder)
 
 		#fill our deque so our input size is always the same
 		for x in range(0, self.memory_capacity):
 			self.inputQ.append(null_input)
 			self.actionQ.append(0)
 
-		pass
+		return {'model created':True}
 		
 	#expected optional api: parse input object and return a result object, which will be converted to json for UE4
 	def onJsonInput(self, jsonInput):
@@ -116,8 +119,7 @@ class ExampleAPI(TFPluginAPI):
 		return {'action':float(action)}
 
 	def saveModel(self, jsonInput):
-	    folder = jsonInput
-	    self.model.model.saveModel(self.inputQ, self.actionQ, folder)
+	    self.model.model.saveModel(self.inputQ, self.actionQ)
 	    pass
 
 	#expected optional api: start training your network

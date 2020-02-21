@@ -7,7 +7,7 @@ from cnn_tensorflow import CNN
 # See https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf for model description
 
 class DQN:
-  def __init__(self, num_actions, observation_shape, dqn_params, cnn_params):
+  def __init__(self, num_actions, observation_shape, dqn_params, cnn_params, folder):
     self.num_actions = num_actions
     self.epsilon = dqn_params['epsilon']
     self.gamma = dqn_params['gamma']
@@ -17,7 +17,7 @@ class DQN:
     self.memory = deque(maxlen=dqn_params['memory_capacity'])
 
     # initialize network
-    self.model = CNN(num_actions, observation_shape, cnn_params)
+    self.model = CNN(folder, num_actions, observation_shape, cnn_params)
     print("model initialized")
 
   def select_action(self, observation):

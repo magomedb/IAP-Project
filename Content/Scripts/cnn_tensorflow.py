@@ -8,14 +8,14 @@ class CNN:
   Convolutional Neural Network model.
   """
 
-  def __init__(self, num_actions, observation_shape, params={}, verbose=False):
+  def __init__(self, folder, num_actions, observation_shape, params={}, verbose=False):
     """
     Initialize the CNN model with a set of parameters.
     Args:
       params: a dictionary containing values of the models' parameters.
     """
     self.scripts_path = ue.get_content_dir() + "Scripts"
-    self.model_directory = self.scripts_path + "/models"
+    self.model_directory = self.scripts_path + "/models" + "/" + folder
 
     self.modemodel_loaded = False
 
@@ -112,6 +112,7 @@ class CNN:
     """
     The model definition.
     """
+    tf.reset_default_graph()
     session = tf.Session()
 
     self.input_placeholder, self.labels_placeholder, self.actions_placeholder = self.add_placeholders()
@@ -163,8 +164,7 @@ class CNN:
 
     return prediction_probs
 
-  def saveModel(self, inputQ, actionQ, folder):
-    savePath = self.model_directory + "/" + folder + "/model.ckpt"
-    path = self.saverino.save(self.session, savePath)
-    ue.log("Saved model: "+str(savePath))
+  def saveModel(self, inputQ, actionQ):
+    path = self.saverino.save(self.session, self.model_path)
+    ue.log("Saved model: "+str(self.model_path))
     pass
