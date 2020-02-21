@@ -12,8 +12,10 @@ from dqn import DQN
 
 class ExampleAPI(TFPluginAPI):
 
-	#expected optional api: setup your model for training
 	def onSetup(self):
+		pass
+
+	def setupModel(self, jsonInput):
 		#self.sess = tf.InteractiveSession()
 		#self.graph = tf.get_default_graph()
 
@@ -23,7 +25,7 @@ class ExampleAPI(TFPluginAPI):
 		#self.ballXY = tf.placeholder(tf.float32)
 		#self.score = tf.placeholder(tf.float32)
 
-		self.num_actions = 7
+		self.num_actions = 8
 
 		DEFAULT_EPISODES = 2000
 		DEFAULT_STEPS = 500 
@@ -50,19 +52,20 @@ class ExampleAPI(TFPluginAPI):
 
 		null_input = np.zeros(4106)
 		self.observation_shape = null_input.shape
-		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params)
+		folder = jsonInput
+		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params, folder)
 
 		#fill our deque so our input size is always the same
 		for x in range(0, self.memory_capacity):
 			self.inputQ.append(null_input)
 			self.actionQ.append(0)
 
-		pass
+		return {'model created':True}
 		
 	#expected optional api: parse input object and return a result object, which will be converted to json for UE4
 	def onJsonInput(self, jsonInput):
-		
-		#debug action
+        #debug action
+		#ue.log(str(jsonInput))
 		action = randint(0,4)
 
 		#layer our input using deque ~200 frames so we can train with temporal data 
@@ -72,16 +75,19 @@ class ExampleAPI(TFPluginAPI):
 		goalDist = jsonInput['goalDist']
 		botRot = jsonInput['rotation']
 		objList = jsonInput['surroundingObjects']
+		enemyDist = jsonInput['enemyDist']
+		enemyDir = jsonInput['enemyDir']
 		objListLength = len(objList) - 1
 		#ue.log("List type: " + str(type(jsonInput['surroundingObjects'])))
 		pixels.append(goalDist)
 		pixels.append(botRot)
 		observation = pixels
+
 		for i in range(8):
 			if i < objListLength:
 				observation.append(objList[i])
 			else:
-				observation.append(2000)
+				observation.append(4000)
 		reward = jsonInput['reward']
 		#convert to list and set as x placeholder
 		#feed_dict = {self.x: stackedList}
