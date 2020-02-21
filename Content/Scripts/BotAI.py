@@ -48,8 +48,7 @@ class ExampleAPI(TFPluginAPI):
 		self.inputQ = collections.deque(maxlen=self.memory_capacity)
 		self.actionQ = collections.deque(maxlen=self.memory_capacity)
 
-		null_input = np.zeros(4096)
-		ue.log('Shape of null_input: ' + str(null_input))
+		null_input = np.zeros(4106)
 		self.observation_shape = null_input.shape
 		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params)
 
@@ -69,21 +68,20 @@ class ExampleAPI(TFPluginAPI):
 		#layer our input using deque ~200 frames so we can train with temporal data 
 
 		#make a 1D stack of current input
-		#goalDist = jsonInput['goalDist']
-		#botRot = jsonInput['rotation']
-		#objList = jsonInput['surroundingObjects']
 		pixels = jsonInput['pixels']
-		#imageX = jsonInput['imageX']
-		#imageY = jsonInput['imageY']
-		#objListLength = len(objList) - 1
+		goalDist = jsonInput['goalDist']
+		botRot = jsonInput['rotation']
+		objList = jsonInput['surroundingObjects']
+		objListLength = len(objList) - 1
 		#ue.log("List type: " + str(type(jsonInput['surroundingObjects'])))
-		#observation = [goalDist, botRot, pixels]
+		pixels.append(goalDist)
+		pixels.append(botRot)
 		observation = pixels
-        #for i in range(8):
-		#	if i < objListLength:
-		#		observation.append(objList[i])
-		#	else:
-		#		observation.append(2000)
+		for i in range(8):
+			if i < objListLength:
+				observation.append(objList[i])
+			else:
+				observation.append(2000)
 		reward = jsonInput['reward']
 		#convert to list and set as x placeholder
 		#feed_dict = {self.x: stackedList}
