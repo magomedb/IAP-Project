@@ -50,7 +50,7 @@ class ExampleAPI(TFPluginAPI):
 		self.inputQ = collections.deque(maxlen=self.memory_capacity)
 		self.actionQ = collections.deque(maxlen=self.memory_capacity)
 
-		null_input = np.zeros(4106)
+		null_input = np.zeros(4099)
 		self.observation_shape = null_input.shape
 		folder = jsonInput
 		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params, folder)
@@ -73,21 +73,13 @@ class ExampleAPI(TFPluginAPI):
 		#make a 1D stack of current input
 		pixels = jsonInput['pixels']
 		goalDist = jsonInput['goalDist']
-		botRot = jsonInput['rotation']
-		objList = jsonInput['surroundingObjects']
-		enemyDist = jsonInput['enemyDist']
-		enemyDir = jsonInput['enemyDir']
-		objListLength = len(objList) - 1
+		goalDir = jsonInput['goalDir']
+		rotation = jsonInput['rotation']
 		#ue.log("List type: " + str(type(jsonInput['surroundingObjects'])))
 		pixels.append(goalDist)
-		pixels.append(botRot)
+		pixels.append(goalDir)
+		pixels.append(rotation)
 		observation = pixels
-
-		for i in range(8):
-			if i < objListLength:
-				observation.append(objList[i])
-			else:
-				observation.append(4000)
 		reward = jsonInput['reward']
 		#convert to list and set as x placeholder
 		#feed_dict = {self.x: stackedList}
