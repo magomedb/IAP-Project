@@ -66,7 +66,7 @@ class ExampleAPI(TFPluginAPI):
 	def onJsonInput(self, jsonInput):
         #debug action
 		#ue.log(str(jsonInput))
-		action = randint(0,4)
+		action = randint(0, self.num_actions-1)
 
 		#layer our input using deque ~200 frames so we can train with temporal data 
 
