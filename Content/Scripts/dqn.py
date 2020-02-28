@@ -1,7 +1,7 @@
 import numpy as np
 import random as random
 from collections import deque
-
+import unreal_engine as ue
 from cnn_tensorflow import CNN
 
 # See https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf for model description
@@ -102,3 +102,27 @@ class DQN:
       actions = np.array(actions)
 
       self.model.train_step(Xs, ys, actions)
+
+  def saveBatchReward(self, iterations):
+    r = 0
+    it = iterations/10000
+    index = 0
+    for t in self.memory:
+      #t = self.memory[index]
+      r += t['reward']
+    file = self.model.model_directory + "/plot.txt"
+    try:
+      f = open(file, "r")
+      lines = f.read().splitlines()
+      last_line = lines[-1]
+      #ue.log(str(last_line))
+      index = int(str(last_line.split(",")[0])) + 1
+      #ue.log(index)
+      f.close()
+    except:
+      index = 1
+    ue.log("Saved: " + str(index) +  "," + str(r) + " memlen: " + str(len(self.memory)))
+    f = open(file, "a+")
+    f.write(str(index)+ "," + str(r) + "\n")
+    f.close()
+    pass

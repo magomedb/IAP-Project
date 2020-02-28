@@ -1,7 +1,7 @@
 import tensorflow as tf
 import unreal_engine as ue
 from TFPluginAPI import TFPluginAPI
-
+import upypip as pip
 #utility imports
 from random import randint
 import collections
@@ -24,17 +24,17 @@ class ExampleAPI(TFPluginAPI):
 		#self.paddleY = tf.placeholder(tf.float32)
 		#self.ballXY = tf.placeholder(tf.float32)
 		#self.score = tf.placeholder(tf.float32)
+		self.iterations = 0
 
 		self.num_actions = 8
-
 		DEFAULT_EPISODES = 2000
 		DEFAULT_STEPS = 500 
 		DEFAULT_ENVIRONMENT = 'BOT-UE4'
 
 		DEFAULT_MEMORY_CAPACITY = 10000
-		DEFAULT_EPSILON = 0.04
+		DEFAULT_EPSILON = 0.07
 		DEFAULT_GAMMA = 0.9
-		DEFAULT_MINI_BATCH_SIZE = 10
+		DEFAULT_MINI_BATCH_SIZE = 16
 
 		DEFAULT_LEARNING_RATE = 0.0001
 		DEFAULT_REGULARIZATION = 0.001
@@ -64,10 +64,8 @@ class ExampleAPI(TFPluginAPI):
 		
 	#expected optional api: parse input object and return a result object, which will be converted to json for UE4
 	def onJsonInput(self, jsonInput):
-        #debug action
-		#ue.log(str(jsonInput))
-		action = randint(0, self.num_actions-1)
 
+		action = randint(0, self.num_actions-1)
 		#layer our input using deque ~200 frames so we can train with temporal data 
 
 		#make a 1D stack of current input
@@ -107,19 +105,22 @@ class ExampleAPI(TFPluginAPI):
 
 		action = self.model.select_action(observation)
 		self.actionQ.append(action)
+		
+        #counting iterations to save when we hit our memory
+		self.iterations += 1
 
-		#debug 
-		#print(jsonInput)
-		#print(stackedInput)
-		#print(jsonInput['actionScore'])
-		#print(len(self.inputQ))	#deque should grow until max size
-		#print(feed_dict)
+        #Calls saveBatchReward when we are at a completly new batch for plotting
+		if(self.iterations%10000 == 0):
+			self.saveBatchReward()
 
 		#return selected action
 		return {'action':float(action)}
 
 	def saveModel(self, jsonInput):
 	    self.model.model.saveModel(self.inputQ, self.actionQ)
+	    pass
+	def saveBatchReward(self):
+	    self.model.saveBatchReward(self.iterations)
 	    pass
 
 	#expected optional api: start training your network
