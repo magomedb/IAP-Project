@@ -25,7 +25,7 @@ class ExampleAPI(TFPluginAPI):
 		#self.ballXY = tf.placeholder(tf.float32)
 		#self.score = tf.placeholder(tf.float32)
 
-		self.num_actions = 8
+		self.num_actions = 7
 
 		DEFAULT_EPISODES = 2000
 		DEFAULT_STEPS = 500 
@@ -34,7 +34,7 @@ class ExampleAPI(TFPluginAPI):
 		DEFAULT_MEMORY_CAPACITY = 10000
 		DEFAULT_EPSILON = 0.2
 		DEFAULT_GAMMA = 0.9
-		DEFAULT_MINI_BATCH_SIZE = 10
+		DEFAULT_MINI_BATCH_SIZE = 16
 
 		DEFAULT_LEARNING_RATE = 0.0001
 		DEFAULT_REGULARIZATION = 0.001
@@ -49,8 +49,8 @@ class ExampleAPI(TFPluginAPI):
 		self.memory_capacity = 200
 		self.inputQ = collections.deque(maxlen=self.memory_capacity)
 		self.actionQ = collections.deque(maxlen=self.memory_capacity)
-
-		null_input = np.zeros(4099)
+        #4099
+		null_input = np.zeros(67)
 		self.observation_shape = null_input.shape
 		folder = jsonInput
 		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params, folder)
@@ -66,7 +66,7 @@ class ExampleAPI(TFPluginAPI):
 	def onJsonInput(self, jsonInput):
         #debug action
 		#ue.log(str(jsonInput))
-		action = randint(0,4)
+		action = randint(0, self.num_actions - 1)
 
 		#layer our input using deque ~200 frames so we can train with temporal data 
 
