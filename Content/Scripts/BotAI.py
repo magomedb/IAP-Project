@@ -40,6 +40,9 @@ class ExampleAPI(TFPluginAPI):
 		DEFAULT_REGULARIZATION = 0.001
 		DEFAULT_NUM_HIDDEN = 2 # not used in tensorflow implementation
 		DEFAULT_HIDDEN_SIZE = 20
+		jsonArr = jsonInput.split(",")
+
+		self.train_model = int(jsonArr[1])
 
 		self.agent_params = {'episodes': DEFAULT_EPISODES, 'steps': DEFAULT_STEPS, 'environment': DEFAULT_ENVIRONMENT, 'run_id': 1}
 		self.cnn_params = {'lr': DEFAULT_LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION, 'num_hidden':DEFAULT_NUM_HIDDEN,'hidden_size':DEFAULT_HIDDEN_SIZE,'mini_batch_size': DEFAULT_MINI_BATCH_SIZE}
@@ -52,7 +55,7 @@ class ExampleAPI(TFPluginAPI):
 
 		null_input = np.zeros(12)
 		self.observation_shape = null_input.shape
-		folder = jsonInput
+		folder = jsonArr[0]
 		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params, folder)
 
 		#fill our deque so our input size is always the same
@@ -97,7 +100,8 @@ class ExampleAPI(TFPluginAPI):
 		self.model.update_state(lastAction, lastObservation, observation, reward, done)
 
 		# train step
-		self.model.train_step()
+		if(self.train_model == 1):
+			self.model.train_step()
 
 		#append our stacked input to our deque
 		self.inputQ.append(observation)
