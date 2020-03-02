@@ -72,20 +72,9 @@ class ExampleAPI(TFPluginAPI):
 		#layer our input using deque ~200 frames so we can train with temporal data 
 
 		#make a 1D stack of current input
-		goalDist = jsonInput['goalDist']
-		botRot = jsonInput['rotation']
-		objList = jsonInput['surroundingObjects']
-		enemyDist = jsonInput['enemyDist']
-		enemyDir = jsonInput['enemyDir']
-		objListLength = len(objList) - 1
-		#ue.log("List type: " + str(type(jsonInput['surroundingObjects'])))
-		observation = [goalDist, botRot, enemyDist, enemyDir]
-		for i in range(8):
-			if i < objListLength:
-				observation.append(objList[i])
-			else:
-				observation.append(4000)
+		observation = jsonInput['percept']
 		reward = jsonInput['reward']
+		#ue.log("Percept: " + str(observation) + " reward: " + str(reward))
 
 		#convert to list and set as x placeholder
 		#feed_dict = {self.x: stackedList}
