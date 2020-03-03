@@ -3083,7 +3083,7 @@ PyObject* ue_unbind_pyevent(ue_PyUObject* u_obj, FString event_name, PyObject* p
 #if ENGINE_MINOR_VERSION < 23
 			casted_prop->SetPropertyValue_InContainer(u_obj->ue_object, multiscript_delegate);
 #else
-			casted_prop->SetMulticastDelegate(casted_prop->ContainerPtrToValuePtr<void>(u_obj->ue_object), multiscript_delegate);
+			casted_prop->SetMulticastDelegate(u_obj->ue_object, multiscript_delegate);
 #endif
 		}
 	}
@@ -3117,16 +3117,25 @@ PyObject* ue_bind_pyevent(ue_PyUObject* u_obj, FString event_name, PyObject* py_
 
 	if (auto casted_prop = Cast<UMulticastDelegateProperty>(u_property))
 	{
+#if ENGINE_MINOR_VERSION < 23
+		FMulticastScriptDelegate multiscript_delegate = casted_prop->GetPropertyValue_InContainer(u_obj->ue_object);
+#else
+		FMulticastScriptDelegate multiscript_delegate = *casted_prop->GetMulticastDelegate(u_obj->ue_object);
+#endif
+
 		FScriptDelegate script_delegate;
 		UPythonDelegate* py_delegate = FUnrealEnginePythonHouseKeeper::Get()->NewDelegate(u_obj->ue_object, py_callable, casted_prop->SignatureFunction);
 		// fake UFUNCTION for bypassing checks
 		script_delegate.BindUFunction(py_delegate, FName("PyFakeCallable"));
 
-#if ENGINE_MINOR_VERSION < 23
-		FMulticastScriptDelegate multiscript_delegate = casted_prop->GetPropertyValue_InContainer(u_obj->ue_object);
+		// add the new delegate
 		multiscript_delegate.Add(script_delegate);
+
+		// re-assign multicast delegate
+#if ENGINE_MINOR_VERSION < 23
+		casted_prop->SetPropertyValue_InContainer(u_obj->ue_object, multiscript_delegate);
 #else
-		casted_prop->AddDelegate(script_delegate, u_obj->ue_object);
+		casted_prop->SetMulticastDelegate(u_obj->ue_object, multiscript_delegate);
 #endif
 	}
 	else if (auto casted_prop_delegate = Cast<UDelegateProperty>(u_property))
