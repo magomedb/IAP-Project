@@ -50,7 +50,7 @@ class ExampleAPI(TFPluginAPI):
 		self.inputQ = collections.deque(maxlen=self.memory_capacity)
 		self.actionQ = collections.deque(maxlen=self.memory_capacity)
         #4099
-		null_input = np.zeros(67)
+		null_input = np.zeros(4099)
 		self.observation_shape = null_input.shape
 		folder = jsonInput
 		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params, folder)
