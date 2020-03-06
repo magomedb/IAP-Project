@@ -26,7 +26,6 @@ class ExampleAPI(TFPluginAPI):
 		#self.score = tf.placeholder(tf.float32)
 		self.iterations = 0
 
-		self.num_actions = 8
 		DEFAULT_EPISODES = 2000
 		DEFAULT_STEPS = 500 
 		DEFAULT_ENVIRONMENT = 'BOT-UE4'
@@ -42,7 +41,9 @@ class ExampleAPI(TFPluginAPI):
 		DEFAULT_HIDDEN_SIZE = 20
 		jsonArr = jsonInput.split(",")
 
+		ue.log(str(jsonArr))
 		self.train_model = int(jsonArr[1])
+		self.num_actions = int(jsonArr[3])
 
 		self.agent_params = {'episodes': DEFAULT_EPISODES, 'steps': DEFAULT_STEPS, 'environment': DEFAULT_ENVIRONMENT, 'run_id': 1}
 		self.cnn_params = {'lr': DEFAULT_LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION, 'num_hidden':DEFAULT_NUM_HIDDEN,'hidden_size':DEFAULT_HIDDEN_SIZE,'mini_batch_size': DEFAULT_MINI_BATCH_SIZE}
@@ -53,7 +54,7 @@ class ExampleAPI(TFPluginAPI):
 		self.inputQ = collections.deque(maxlen=self.memory_capacity)
 		self.actionQ = collections.deque(maxlen=self.memory_capacity)
 
-		null_input = np.zeros(12)
+		null_input = np.zeros(int(jsonArr[2]))
 		self.observation_shape = null_input.shape
 		folder = jsonArr[0]
 		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params, folder)
