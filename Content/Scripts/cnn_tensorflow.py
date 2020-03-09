@@ -89,6 +89,7 @@ class CNN:
     #ue.log(str(b3))
     #ue.log(str(U))
     #ue.log(str(b4))
+    ue.log('model values created')
     return out, reg
 
   def loadnn(self, input_placeholder, sess):
@@ -147,13 +148,10 @@ class CNN:
     session = tf.Session()
 
     self.input_placeholder, self.labels_placeholder, self.actions_placeholder = self.add_placeholders()
-    outputs,reg, loaded = self.loadnn(self.input_placeholder, session)
-    if(loaded == False):
-        ue.log("failed to load model making new")
-        outputs, reg = self.nn(self.input_placeholder)
+    outputs, reg = self.nn(self.input_placeholder)
 
     self.predictions = outputs
-    
+
     self.q_vals = tf.reduce_sum(tf.multiply(self.predictions, self.actions_placeholder), 1)
 
     self.loss = tf.reduce_sum(tf.square(self.labels_placeholder - self.q_vals)) + reg
@@ -161,9 +159,19 @@ class CNN:
     optimizer = tf.train.GradientDescentOptimizer(learning_rate = self.lr)
 
     self.train_op = optimizer.minimize(self.loss)
-    init = tf.initialize_all_variables()
+
     self.saverino = tf.train.Saver()
-    session.run(init)
+    try:
+        saver = tf.train.Saver()
+        saver.restore(session, self.model_path)
+        ue.log("model restored")
+        #ue.log(str(session.run(self.W2)))#test values
+    except:
+        init = tf.initialize_all_variables()
+        self.saverino = tf.train.Saver()
+        session.run(init)
+        ue.log('Created new model')
+
     ue.log('session created')
     return session
 
@@ -197,5 +205,6 @@ class CNN:
 
   def saveModel(self, inputQ, actionQ):
     path = self.saverino.save(self.session, self.model_path)
+    #ue.log(str(self.session.run(self.W2)))#test values
     ue.log("Saved model: "+str(self.model_path))
     pass
