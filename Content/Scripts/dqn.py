@@ -12,6 +12,10 @@ class DQN:
     self.epsilon = dqn_params['epsilon']
     self.gamma = dqn_params['gamma']
     self.mini_batch_size = dqn_params['mini_batch_size']
+    self.time_step = 0
+    self.decay_rate = dqn_params['decay_rate']
+    self.epsilon_min = dqn_params['epsilon_min']
+    self.current_epsilon = self.epsilon
 
     # memory 
     self.memory = deque(maxlen=dqn_params['memory_capacity'])
@@ -20,14 +24,18 @@ class DQN:
     self.model = CNN(folder, num_actions, observation_shape, cnn_params)
     print("model initialized")
 
-  def select_action(self, observation):
+  def select_action(self, observation, iterations):
     """
     Selects the next action to take based on the current state and learned Q.
     Args:
       observation: the current state
     """
-
-    if random.random() < self.epsilon: 
+    if(iterations%50==0):
+        self.current_epsilon = self.epsilon_min + (self.epsilon - self.epsilon_min) * np.exp(-self.decay_rate * self.time_step)
+        self.time_step += 1
+        #ue.log(str(self.current_epsilon))
+        
+    if random.random() < self.current_epsilon: 
       # with epsilon probability select a random action 
       action = np.random.randint(0, self.num_actions)
     else:

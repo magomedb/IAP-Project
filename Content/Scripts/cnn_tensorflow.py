@@ -46,37 +46,54 @@ class CNN:
   def nn(self, input_obs):
     with tf.name_scope("Layer1") as scope:
       W1shape = [self.observation_shape, self.hidden_size]
-      W1 = tf.get_variable("W1", shape=W1shape,)
-      bshape = [1, self.hidden_size]
-      b1 = tf.get_variable("b1", shape=bshape, initializer = tf.constant_initializer(0.0))
+      self.W1 = tf.get_variable("W1", shape=W1shape,)
+      b1shape = [1, self.hidden_size]
+      self.b1 = tf.get_variable("b1", shape=b1shape, initializer = tf.constant_initializer(0.0))
 
     with tf.name_scope("Layer2") as scope:
-      W2shape = [self.hidden_size, self.hidden_size]
-      W2 = tf.get_variable("W2", shape=W2shape,)
-      bshape = [1, self.hidden_size]
-      b2 = tf.get_variable("b2", shape=bshape, initializer = tf.constant_initializer(0.0))
+      W2shape = [self.hidden_size, 256]
+      self.W2 = tf.get_variable("W2", shape=W2shape,)
+      b2shape = [1, 256]
+      self.b2 = tf.get_variable("b2", shape=b2shape, initializer = tf.constant_initializer(0.0))
+
+    with tf.name_scope("Layer3") as scope:
+      W3shape = [256, 256]
+      self.W3 = tf.get_variable("W3", shape=W3shape,)
+      b3shape = [1, 256]
+      self.b3 = tf.get_variable("b3", shape=b3shape, initializer = tf.constant_initializer(0.0))
 
     with tf.name_scope("OutputLayer") as scope:
-      Ushape = [self.hidden_size, self.num_actions]
-      U = tf.get_variable("U", shape=Ushape)
-      b3shape = [1, self.num_actions]
-      b3 = tf.get_variable("b3", shape=b3shape, initializer = tf.constant_initializer(0.0))
+      Ushape = [256, self.num_actions]
+      self.U = tf.get_variable("U", shape=Ushape)
+      b4shape = [1, self.num_actions]
+      self.b4 = tf.get_variable("b4", shape=b4shape, initializer = tf.constant_initializer(0.0))
 
-    xW = tf.matmul(input_obs, W1)
-    h = tf.tanh(tf.add(xW, b1))
+    xW = tf.matmul(input_obs, self.W1)
+    h = tf.tanh(tf.add(xW, self.b1))
 
-    xW = tf.matmul(h, W2)
-    h = tf.tanh(tf.add(xW, b2))
+    xW = tf.matmul(h, self.W2)
+    h = tf.tanh(tf.add(xW, self.b2))
 
-    hU = tf.matmul(h, U)    
-    out = tf.add(hU, b3)
+    xW = tf.matmul(h, self.W3)
+    h = tf.tanh(tf.add(xW, self.b3))
 
-    reg = self.reg * (tf.reduce_sum(tf.square(W1)) + tf.reduce_sum(tf.square(W2)) + tf.reduce_sum(tf.square(U)))
+    hU = tf.matmul(h, self.U)
+    out = tf.add(hU, self.b4)
+
+    reg = self.reg * (tf.reduce_sum(tf.square(self.W1)) + tf.reduce_sum(tf.square(self.W2)) + tf.reduce_sum(tf.square(self.W3)) + tf.reduce_sum(tf.square(self.U)))
+    #ue.log(str(W1))
+    #ue.log(str(b1))
+    #ue.log(str(W2))
+    #ue.log(str(b2))
+    #ue.log(str(W3))
+    #ue.log(str(b3))
+    #ue.log(str(U))
+    #ue.log(str(b4))
     return out, reg
 
   def loadnn(self, input_placeholder, sess):
     model_loaded = False
-    outputs = None
+    out = None
     reg = None
     with sess.as_default():
       try:
@@ -87,27 +104,41 @@ class CNN:
         model_loaded = True
         #restore our weights
         self.graph = tf.get_default_graph()
-        W1 = self.graph.get_tensor_by_name("W1:0")
-        b1 = self.graph.get_tensor_by_name("b1:0")
-        W2 = self.graph.get_tensor_by_name("W2:0")
-        b2 = self.graph.get_tensor_by_name("b2:0")
-        U = self.graph.get_tensor_by_name("U:0")
-        b3 = self.graph.get_tensor_by_name("b3:0")
+        self.W1 = self.graph.get_tensor_by_name("W1:0")
+        self.b1 = self.graph.get_tensor_by_name("b1:0")
+        self.W2 = self.graph.get_tensor_by_name("W2:0")
+        self.b2 = self.graph.get_tensor_by_name("b2:0")
+        self.W3 = self.graph.get_tensor_by_name("W3:0")
+        self.b3 = self.graph.get_tensor_by_name("b3:0")
+        self.U = self.graph.get_tensor_by_name("U:0")
+        self.b4 = self.graph.get_tensor_by_name("b4:0")
 
-        xW = tf.matmul(self.input_placeholder, W1)
-        h = tf.tanh(tf.add(xW, b1))
+        xW = tf.matmul(input_placeholder, self.W1)
+        h = tf.tanh(tf.add(xW, self.b1))
 
-        xW = tf.matmul(h, W2)
-        h = tf.tanh(tf.add(xW, b2))
+        xW = tf.matmul(h, self.W2)
+        h = tf.tanh(tf.add(xW, self.b2))
 
-        hU = tf.matmul(h, U)    
-        outputs = tf.add(hU, b3)
+        xW = tf.matmul(h, self.W3)
+        h = tf.tanh(tf.add(xW, self.b3))
 
-        reg = self.reg * (tf.reduce_sum(tf.square(W1)) + tf.reduce_sum(tf.square(W2)) + tf.reduce_sum(tf.square(U)))
+        hU = tf.matmul(h, self.U)
+        out = tf.add(hU, self.b4)
+
+        reg = self.reg * (tf.reduce_sum(tf.square(self.W1)) + tf.reduce_sum(tf.square(self.W2)) + tf.reduce_sum(tf.square(self.W3)) + tf.reduce_sum(tf.square(self.U)))
         ue.log('Session variables restored')
+        #ue.log(str(W1))
+        #ue.log(str(b1))
+        #ue.log(str(W2))
+        #ue.log(str(b2))
+        #ue.log(str(W3))
+        #ue.log(str(b3))
+        #ue.log(str(U))
+        #ue.log(str(b4))
       except:
           model_loaded = False
-    return outputs, reg, model_loaded
+    return out, reg, model_loaded
+
   def create_model(self):
     """
     The model definition.
