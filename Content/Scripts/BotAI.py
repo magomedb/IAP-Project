@@ -35,7 +35,7 @@ class ExampleAPI(TFPluginAPI):
 		DEFAULT_GAMMA = 0.9
 		DEFAULT_MINI_BATCH_SIZE = 128
 
-		DEFAULT_LEARNING_RATE = 0.0000000
+		DEFAULT_LEARNING_RATE = 0.0000001
 		DEFAULT_REGULARIZATION = 0.001
 		DEFAULT_NUM_HIDDEN = 2 # not used in tensorflow implementation
 		DEFAULT_HIDDEN_SIZE = 64
@@ -104,7 +104,7 @@ class ExampleAPI(TFPluginAPI):
 		self.iterations += 1
 
         #Calls saveBatchReward when we are at a completly new batch for plotting
-		if(self.iterations%10000 == 0):
+		if(self.iterations%1000 == 0):
 			self.saveBatchReward()
 
 		#return selected action
