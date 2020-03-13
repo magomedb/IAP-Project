@@ -25,20 +25,22 @@ class ExampleAPI(TFPluginAPI):
 		#self.ballXY = tf.placeholder(tf.float32)
 		#self.score = tf.placeholder(tf.float32)
 		self.iterations = 0
+		DECAY_RATE = 0.0005
+		EPSILON_MIN = 0.01
 
 		DEFAULT_EPISODES = 2000
 		DEFAULT_STEPS = 500 
 		DEFAULT_ENVIRONMENT = 'BOT-UE4'
 
 		DEFAULT_MEMORY_CAPACITY = 10000
-		DEFAULT_EPSILON = 0.03
+		DEFAULT_EPSILON = 1.0
 		DEFAULT_GAMMA = 0.9
 		DEFAULT_MINI_BATCH_SIZE = 128
 
 		DEFAULT_LEARNING_RATE = 0.0000001
 		DEFAULT_REGULARIZATION = 0.001
 		DEFAULT_NUM_HIDDEN = 2 # not used in tensorflow implementation
-		DEFAULT_HIDDEN_SIZE = 64
+		DEFAULT_HIDDEN_SIZE = 128
 		jsonArr = jsonInput.split(",")
 
 		ue.log(str(jsonArr))
@@ -47,7 +49,7 @@ class ExampleAPI(TFPluginAPI):
 
 		self.agent_params = {'episodes': DEFAULT_EPISODES, 'steps': DEFAULT_STEPS, 'environment': DEFAULT_ENVIRONMENT, 'run_id': 1}
 		self.cnn_params = {'lr': DEFAULT_LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION, 'num_hidden':DEFAULT_NUM_HIDDEN,'hidden_size':DEFAULT_HIDDEN_SIZE,'mini_batch_size': DEFAULT_MINI_BATCH_SIZE}
-		self.dqn_params = {'memory_capacity':DEFAULT_MEMORY_CAPACITY, 'epsilon':DEFAULT_EPSILON, 'gamma':DEFAULT_GAMMA,'mini_batch_size':DEFAULT_MINI_BATCH_SIZE}
+		self.dqn_params = {'memory_capacity':DEFAULT_MEMORY_CAPACITY, 'epsilon':DEFAULT_EPSILON, 'gamma':DEFAULT_GAMMA,'mini_batch_size':DEFAULT_MINI_BATCH_SIZE, 'decay_rate': DECAY_RATE, 'epsilon_min': EPSILON_MIN}
 
 		#use collections to manage a x frames buffer of input
 		self.memory_capacity = 200
@@ -97,7 +99,7 @@ class ExampleAPI(TFPluginAPI):
 		self.inputQ.append(observation)
 		#stackedList = list(self.inputQ)
 
-		action = self.model.select_action(observation)
+		action = self.model.select_action(observation, self.iterations)
 		self.actionQ.append(action)
 		
         #counting iterations to save when we hit our memory

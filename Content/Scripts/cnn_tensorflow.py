@@ -77,7 +77,7 @@ class CNN:
     xW = tf.matmul(h, self.W3)
     h = tf.tanh(tf.add(xW, self.b3))
 
-    hU = tf.matmul(h, self.U)    
+    hU = tf.matmul(h, self.U)
     out = tf.add(hU, self.b4)
 
     reg = self.reg * (tf.reduce_sum(tf.square(self.W1)) + tf.reduce_sum(tf.square(self.W2)) + tf.reduce_sum(tf.square(self.W3)) + tf.reduce_sum(tf.square(self.U)))
@@ -123,7 +123,7 @@ class CNN:
         xW = tf.matmul(h, self.W3)
         h = tf.tanh(tf.add(xW, self.b3))
 
-        hU = tf.matmul(h, self.U)    
+        hU = tf.matmul(h, self.U)
         out = tf.add(hU, self.b4)
 
         reg = self.reg * (tf.reduce_sum(tf.square(self.W1)) + tf.reduce_sum(tf.square(self.W2)) + tf.reduce_sum(tf.square(self.W3)) + tf.reduce_sum(tf.square(self.U)))
@@ -139,6 +139,7 @@ class CNN:
       except:
           model_loaded = False
     return out, reg, model_loaded
+
   def create_model(self):
     """
     The model definition.
