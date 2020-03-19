@@ -31,6 +31,7 @@ class CNN:
     self.reg = params['reg']
     self.num_hidden = params['num_hidden']
     self.hidden_size = params['hidden_size']
+    self.hidden_size2 = params['hidden_size2']
 
     self.session = self.create_model()
 
@@ -51,19 +52,19 @@ class CNN:
       self.b1 = tf.get_variable("b1", shape=b1shape, initializer = tf.constant_initializer(0.0))
 
     with tf.name_scope("Layer2") as scope:
-      W2shape = [self.hidden_size, 256]
+      W2shape = [self.hidden_size, self.hidden_size2]
       self.W2 = tf.get_variable("W2", shape=W2shape,)
-      b2shape = [1, 256]
+      b2shape = [1, self.hidden_size2]
       self.b2 = tf.get_variable("b2", shape=b2shape, initializer = tf.constant_initializer(0.0))
 
     with tf.name_scope("Layer3") as scope:
-      W3shape = [256, 256]
+      W3shape = [self.hidden_size2, self.hidden_size2]
       self.W3 = tf.get_variable("W3", shape=W3shape,)
-      b3shape = [1, 256]
+      b3shape = [1, self.hidden_size2]
       self.b3 = tf.get_variable("b3", shape=b3shape, initializer = tf.constant_initializer(0.0))
 
     with tf.name_scope("OutputLayer") as scope:
-      Ushape = [256, self.num_actions]
+      Ushape = [self.hidden_size2, self.num_actions]
       self.U = tf.get_variable("U", shape=Ushape)
       b4shape = [1, self.num_actions]
       self.b4 = tf.get_variable("b4", shape=b4shape, initializer = tf.constant_initializer(0.0))
