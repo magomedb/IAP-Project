@@ -39,7 +39,6 @@ class ExampleAPI(TFPluginAPI):
 		DEFAULT_GAMMA = 0.9
 		DEFAULT_MINI_BATCH_SIZE = int(jsonArr[8])
 
-		DEFAULT_LEARNING_RATE = 0.0000001
 		DEFAULT_LEARNING_RATE = float(jsonArr[7])
 		DEFAULT_REGULARIZATION = 0.001
 		DEFAULT_NUM_HIDDEN = 2 # not used in tensorflow implementation
