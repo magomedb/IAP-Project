@@ -25,7 +25,7 @@ class ExampleAPI(TFPluginAPI):
 		#self.ballXY = tf.placeholder(tf.float32)
 		#self.score = tf.placeholder(tf.float32)
 		self.iterations = 0
-		DECAY_RATE = 0.0005
+		DECAY_RATE = 0.005
 		EPSILON_MIN = 0.01
 
 		DEFAULT_EPISODES = 2000
@@ -37,7 +37,7 @@ class ExampleAPI(TFPluginAPI):
 		DEFAULT_GAMMA = 0.9
 		DEFAULT_MINI_BATCH_SIZE = 128
 
-		DEFAULT_LEARNING_RATE = 0.0000000
+		DEFAULT_LEARNING_RATE = 0.0001
 		DEFAULT_REGULARIZATION = 0.001
 		DEFAULT_NUM_HIDDEN = 2 # not used in tensorflow implementation
 		DEFAULT_HIDDEN_SIZE = 128
