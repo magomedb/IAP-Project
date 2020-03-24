@@ -24,31 +24,34 @@ class ExampleAPI(TFPluginAPI):
 		#self.paddleY = tf.placeholder(tf.float32)
 		#self.ballXY = tf.placeholder(tf.float32)
 		#self.score = tf.placeholder(tf.float32)
+		jsonArr = jsonInput.split(",")
+		ue.log(str(jsonArr))
 		self.iterations = 0
-		DECAY_RATE = 0.005
-		EPSILON_MIN = 0.01
+
+		DEFAULT_EPSILON = float(jsonArr[4])
+		DECAY_RATE = float(jsonArr[5])
+		EPSILON_MIN = float(jsonArr[6])
 
 		DEFAULT_EPISODES = 2000
 		DEFAULT_STEPS = 500 
 		DEFAULT_ENVIRONMENT = 'BOT-UE4'
 
 		DEFAULT_MEMORY_CAPACITY = 10000
-		DEFAULT_EPSILON = 1.0
 		DEFAULT_GAMMA = 0.9
-		DEFAULT_MINI_BATCH_SIZE = 128
+		DEFAULT_MINI_BATCH_SIZE = int(jsonArr[8])
 
-		DEFAULT_LEARNING_RATE = 0.0001
+
+		DEFAULT_LEARNING_RATE = float(jsonArr[7])
 		DEFAULT_REGULARIZATION = 0.001
 		DEFAULT_NUM_HIDDEN = 2 # not used in tensorflow implementation
-		DEFAULT_HIDDEN_SIZE = 128
-		jsonArr = jsonInput.split(",")
+		DEFAULT_HIDDEN_SIZE = int(jsonArr[9])
+		DEFAULT_HIDDEN_SIZE2 = int(jsonArr[10])
 
-		ue.log(str(jsonArr))
 		self.train_model = int(jsonArr[1])
 		self.num_actions = int(jsonArr[3])
 
 		self.agent_params = {'episodes': DEFAULT_EPISODES, 'steps': DEFAULT_STEPS, 'environment': DEFAULT_ENVIRONMENT, 'run_id': 1}
-		self.cnn_params = {'lr': DEFAULT_LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION, 'num_hidden':DEFAULT_NUM_HIDDEN,'hidden_size':DEFAULT_HIDDEN_SIZE,'mini_batch_size': DEFAULT_MINI_BATCH_SIZE}
+		self.cnn_params = {'lr': DEFAULT_LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION, 'num_hidden':DEFAULT_NUM_HIDDEN, 'hidden_size':DEFAULT_HIDDEN_SIZE, 'hidden_size2':DEFAULT_HIDDEN_SIZE2,'mini_batch_size': DEFAULT_MINI_BATCH_SIZE}
 		self.dqn_params = {'memory_capacity':DEFAULT_MEMORY_CAPACITY, 'epsilon':DEFAULT_EPSILON, 'gamma':DEFAULT_GAMMA,'mini_batch_size':DEFAULT_MINI_BATCH_SIZE, 'decay_rate': DECAY_RATE, 'epsilon_min': EPSILON_MIN}
 
 		#use collections to manage a x frames buffer of input
@@ -106,7 +109,7 @@ class ExampleAPI(TFPluginAPI):
 		self.iterations += 1
 
         #Calls saveBatchReward when we are at a completly new batch for plotting
-		if(self.iterations%10000 == 0):
+		if(self.iterations%1000 == 0):
 			self.saveBatchReward()
 
 		#return selected action

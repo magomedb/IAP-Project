@@ -113,10 +113,10 @@ class DQN:
 
   def saveBatchReward(self, iterations):
     r = 0
-    it = iterations/10000
+    it = iterations/1000
     index = 0
-    for t in self.memory:
-      #t = self.memory[index]
+    for x in range((len(self.memory))-1000, (len(self.memory))):
+      t = self.memory[x]
       r += t['reward']
     file = self.model.model_directory + "/plot.txt"
     try:
