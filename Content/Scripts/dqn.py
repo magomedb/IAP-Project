@@ -34,7 +34,7 @@ class DQN:
     if(iterations%50==0):
         self.current_epsilon = self.epsilon_min + (self.epsilon - self.epsilon_min) * np.exp(-self.decay_rate * self.time_step)
         self.time_step += 1
-        #ue.log(str(self.current_epsilon))
+        ue.log(str(self.current_epsilon))
         
     if random.random() < self.current_epsilon: 
       # with epsilon probability select a random action 

@@ -27,6 +27,7 @@ class ExampleAPI(TFPluginAPI):
 		jsonArr = jsonInput.split(",")
 		ue.log(str(jsonArr))
 		self.iterations = 0
+
 		DEFAULT_EPSILON = float(jsonArr[4])
 		DECAY_RATE = float(jsonArr[5])
 		EPSILON_MIN = float(jsonArr[6])
@@ -38,6 +39,7 @@ class ExampleAPI(TFPluginAPI):
 		DEFAULT_MEMORY_CAPACITY = 10000
 		DEFAULT_GAMMA = 0.9
 		DEFAULT_MINI_BATCH_SIZE = int(jsonArr[8])
+
 
 		DEFAULT_LEARNING_RATE = float(jsonArr[7])
 		DEFAULT_REGULARIZATION = 0.001
