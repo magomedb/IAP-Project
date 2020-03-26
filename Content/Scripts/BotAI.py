@@ -95,6 +95,7 @@ class ExampleAPI(TFPluginAPI):
 		# train step
 		if(self.train_model == 1):
 			self.model.train_step()
+			#ue.log(str(observation))#Debug
 
 		#append our stacked input to our deque
 		self.inputQ.append(observation)

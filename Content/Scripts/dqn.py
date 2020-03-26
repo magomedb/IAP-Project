@@ -9,6 +9,7 @@ from cnn_tensorflow import CNN
 class DQN:
   def __init__(self, num_actions, observation_shape, dqn_params, cnn_params, folder):
     self.num_actions = num_actions
+    self.observation_shape = observation_shape
     self.epsilon = dqn_params['epsilon']
     self.gamma = dqn_params['gamma']
     self.mini_batch_size = dqn_params['mini_batch_size']
@@ -80,34 +81,43 @@ class DQN:
     """
     if len(self.memory) > self.mini_batch_size:
       mini_batch = self.get_random_mini_batch()
+      states = np.zeros((self.mini_batch_size, self.observation_shape[0]))
+      for i in range(self.mini_batch_size):
+        states[i] = mini_batch[i]['new_observation']
 
+      target_next_test = self.model.predict(states)
+      #ue.log(str(target_next_test))
       Xs = []
       ys = []
       actions = []
 
-      for sample in mini_batch:
-        y_j = sample['reward']
+      for i in range(self.mini_batch_size):
+        y_j = mini_batch[i]['reward']
 
-        # for nonterminals, add gamma*max_a(Q(phi_{j+1})) term to y_j
-        if not sample['is_done']:
-          new_observation = sample['new_observation']
-          new_obs = np.array([new_observation])
-          q_new_values = self.model.predict(new_obs)
+        # for nonterminals, add gammamaxa(Q(phi{j+1})) term to y_j
+        if not mini_batch[i]['is_done']:
+
+          q_new_values = target_next_test[i]
+
           action = np.max(q_new_values)
           y_j += self.gamma*action
 
         action = np.zeros(self.num_actions)
-        action[sample['action']] = 1
+        action[mini_batch[i]['action']] = 1
 
-        observation = sample['observation']
+        observation = mini_batch[i]['observation']
 
         Xs.append(observation.copy())
         ys.append(y_j)
         actions.append(action.copy())
 
+
       Xs = np.array(Xs)
       ys = np.array(ys)
       actions = np.array(actions)
+
+      self.model.train_step(Xs, ys, actions)
+
 
       self.model.train_step(Xs, ys, actions)
 
@@ -129,7 +139,7 @@ class DQN:
       f.close()
     except:
       index = 1
-    ue.log("Saved: " + str(index) +  "," + str(r) + " memlen: " + str(len(self.memory)))
+    ue.log("Saved: " + str(index) +  "," + str(r) + " memlen: " + str(len(self.memory)) + ", Epsilon: " + str(self.current_epsilon))
     f = open(file, "a+")
     f.write(str(index)+ "," + str(r) + "\n")
     f.close()
