@@ -90,17 +90,20 @@ class DQN:
     """
     #if len(self.memory) > self.mini_batch_size:
     if self.startTraining == True:
-      mini_batch = self.get_random_mini_batch()
-      #tree_idx, mini_batch  = self.per_memory.sample(self.mini_batch_size)
+      #mini_batch = self.get_random_mini_batch()
+      tree_idx, mini_batch  = self.per_memory.sample(self.mini_batch_size)
       #ue.log(str(self.observation_shape[0]))
       new_states = np.zeros((self.mini_batch_size, self.observation_shape[0]))
       old_states = np.zeros((self.mini_batch_size, self.observation_shape[0]))
+      actionsBatch = []
 
       for i in range(self.mini_batch_size):
         new_states[i] = mini_batch[i]['new_observation']
         old_states[i] = mini_batch[i]['observation']
+        actionsBatch.append(mini_batch[i]['action'])
         
       target = self.model.predict(old_states)
+      target_old = np.array(target)
       target_next = self.model.predict(new_states)
       target_val = self.target_model.predict(new_states)
       #ue.log(str(target_next_test))
@@ -138,12 +141,26 @@ class DQN:
         ys.append(y_j)
         actions.append(action.copy())
 
-        #absolute_errors = np.abs(target_old - target)outside sample?
-        #self.per_memory.batch_update(tree_idx, absolute_errors)
-
+      #Seting up for training
       Xs = np.array(Xs)
       ys = np.array(ys)
       actions = np.array(actions)
+
+      #Updateing PER bintree
+      indices = np.arange(self.mini_batch_size, dtype=np.int32)
+      #ue.log(str(ys))
+      actionsInt = np.array(actionsBatch, dtype=int)
+      #ue.log(str(actionsInt))
+      absolute_errors = np.abs(target_old[indices, actionsInt]-ys[indices])
+      #ue.log(str(absolute_errors))
+      # Update priority
+      self.per_memory.batch_update(tree_idx, absolute_errors)
+
+
+      #absolute_errors = np.abs(target_old - target)outside sample?
+      #self.per_memory.batch_update(tree_idx, absolute_errors)
+
+      
 
       self.model.train_step(Xs, ys, actions)
 
@@ -169,7 +186,7 @@ class DQN:
       f.close()
     except:
       index = 1
-    ue.log("Saved: " + str(index) +  "," + str(r) + " memlen: " + str(len(self.memory)))
+    ue.log("Saved: " + str(index) +  "," + str(r) + " memlen: " + str(len(self.memory)) + ", Epislon: " + str(self.current_epsilon))
     f = open(file, "a+")
     f.write(str(index)+ "," + str(r) + "\n")
     f.close()
