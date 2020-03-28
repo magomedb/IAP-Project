@@ -63,6 +63,7 @@ class ExampleAPI(TFPluginAPI):
 		self.observation_shape = null_input.shape
 		folder = jsonArr[0]
 		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params, folder)
+		self.mbs = DEFAULT_MINI_BATCH_SIZE
 
 		#fill our deque so our input size is always the same
 		for x in range(0, self.memory_capacity):
@@ -108,6 +109,10 @@ class ExampleAPI(TFPluginAPI):
 		
         #counting iterations to save when we hit our memory
 		self.iterations += 1
+
+        #Cant start training before we have enough data in memory
+		if(self.iterations == self.mbs+1):
+			self.model.startTraining = True  
 
         #Calls saveBatchReward when we are at a completly new batch for plotting
 		if(self.iterations%1000 == 0):
