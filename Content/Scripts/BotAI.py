@@ -85,7 +85,7 @@ class ExampleAPI(TFPluginAPI):
 		observation = jsonInput['percept']
         #make observations into z-score
 		for i in range(len(observation)):
-				observation[i] = (observation[i]-means[i])/sd[i]
+				observation[i] = (observation[i]-self.means[i])/self.sd[i]
 		reward = jsonInput['reward']
 		#ue.log("Percept: " + str(observation) + " reward: " + str(reward))
 
