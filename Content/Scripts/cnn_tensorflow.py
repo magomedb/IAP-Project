@@ -43,8 +43,36 @@ class CNN:
 
     return input_placeholder, labels_placeholder, actions_placeholder
 
+  def conv2d(self, x, W, b, strides=1):
+      x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
+      x = tf.nn.bias_add(x, b)
+      return tf.nn.relu(x)
+
+  def maxpool2d(self, x, k=2):
+      return tf.nn.max_pool(x, ksize=[1, k, k, 1], strides=[1, k, k, 1], padding='SAME')
 
   def nn(self, input_obs):
+    input_obs = tf.reshape(input_obs, shape=[-1, 32, 32, 4])
+
+    convolutional_weights = {
+        # 5x5 conv, 1 input, 32 outputs
+        'wc1': tf.Variable(tf.random_normal([5, 5, 4, 32])),
+        # 5x5 conv, 32 inputs, 64 outputs
+        'wc2': tf.Variable(tf.random_normal([5, 5, 32, 64]))
+        }
+    convolutional_biases = {
+        'bc1': tf.Variable(tf.random_normal([32])),
+        'bc2': tf.Variable(tf.random_normal([64]))
+        }
+
+    with tf.name_scope("ConvolutionalLayer1") as scope:
+        conv1 = self.conv2d(input_obs, convolutional_weights['wc1'], convolutional_biases['bc1'])
+        conv1 = self.maxpool2d(conv1, k=2)
+
+    with tf.name_scope("ConvolutionalLayer2") as scope:
+        conv2 = self.conv2d(conv1, convolutional_weights['wc2'], convolutional_biases['bc2'])
+        conv2 = self.maxpool2d(conv2, k=2)
+
     with tf.name_scope("Layer1") as scope:
       W1shape = [self.observation_shape, self.hidden_size]
       self.W1 = tf.get_variable("W1", shape=W1shape,)
@@ -69,7 +97,9 @@ class CNN:
       b4shape = [1, self.num_actions]
       self.b4 = tf.get_variable("b4", shape=b4shape, initializer = tf.constant_initializer(0.0))
 
-    xW = tf.matmul(input_obs, self.W1)
+    conv2 = tf.reshape(conv2, shape=[1, 4096])
+    xW = tf.matmul(conv2, self.W1)
+    #xW = tf.matmul(input_obs, self.W1)
     h = tf.tanh(tf.add(xW, self.b1))
 
     xW = tf.matmul(h, self.W2)

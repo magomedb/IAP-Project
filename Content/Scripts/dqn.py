@@ -39,7 +39,7 @@ class DQN:
     Args:
       observation: the current state
     """
-    if(iterations%50==0):
+    if(iterations%1000==0):
         self.current_epsilon = self.epsilon_min + (self.epsilon - self.epsilon_min) * np.exp(-self.decay_rate * self.time_step)
         self.time_step += 1
         #ue.log(str(self.current_epsilon))
