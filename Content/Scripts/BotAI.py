@@ -65,6 +65,9 @@ class ExampleAPI(TFPluginAPI):
 		self.model = DQN(self.num_actions, self.observation_shape, self.dqn_params, self.cnn_params, folder)
 		self.mbs = DEFAULT_MINI_BATCH_SIZE
 
+		self.means = [39.972540197048126, 2917.230659371696, 1.5620389116096363, 1424.7530561269728, 1438.5802363781763, 1396.8256517621742, 1324.4044398493252, 1335.9919897294112, 1373.3212902157181, 1370.831620913581, 1424.7530466823105, 8867.959450107437, 126.56586097639156, 9887.226076756186, 174.52214640825426, 9996.650763818681, 179.83450066013046]
+		self.sd = [1684.8461079453025, 1829275.7585509086, 9903.920549585471, 1941910.9608260505, 1916531.9932543829, 1864032.4269797348, 1804888.6848228131, 1832750.5255002978, 1918629.7410366319, 1919026.3748620125, 1941910.9616675228, 6492403.370267132, 13917.023900371225, 730762.2931285572, 1675.0983595094426, 19916.239842127095, 51.10399355280495]
+
 		#fill our deque so our input size is always the same
 		for x in range(0, self.memory_capacity):
 			self.inputQ.append(null_input)
@@ -80,6 +83,9 @@ class ExampleAPI(TFPluginAPI):
 
 		#make a 1D stack of current input
 		observation = jsonInput['percept']
+        #make observations into z-score
+		for i in range(len(observation)):
+				observation[i] = (observation[i]-means[i])/sd[i]
 		reward = jsonInput['reward']
 		#ue.log("Percept: " + str(observation) + " reward: " + str(reward))
 

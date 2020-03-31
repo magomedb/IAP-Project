@@ -31,7 +31,7 @@ class DQN:
     # initialize network
     self.model = CNN(folder, num_actions, observation_shape, cnn_params)
     print("model initialized")
-    self.target_model = CNN(folder, num_actions, observation_shape, cnn_params)
+    #self.target_model = CNN(folder, num_actions, observation_shape, cnn_params)
 
   def select_action(self, observation, iterations):
     """
@@ -104,7 +104,7 @@ class DQN:
       target = self.model.predict(old_states)
       target_old = np.array(target)
       target_next = self.model.predict(new_states)
-      target_val = self.target_model.predict(new_states)
+      #target_val = self.target_model.predict(new_states)
       #ue.log(str(target_next_test))
       Xs = []
       ys = []
@@ -128,7 +128,7 @@ class DQN:
           actionIndex = np.argmax(q_new_values)
 
           #y_j += self.gamma*action
-          y_j += self.gamma*target_val[i][actionIndex]
+          y_j += self.gamma*target_next[i][actionIndex]
 
         action = np.zeros(self.num_actions)
         action[mini_batch[i]['action']] = 1
@@ -168,14 +168,18 @@ class DQN:
   def saveBatchReward(self, iterations):
     
     #Need this on set iteration update
-    self.target_model = CNN(self.folder, self.num_actions, self.observation_shape, self.cnn_params)
+    #self.target_model = CNN(self.folder, self.num_actions, self.observation_shape, self.cnn_params)
 
+    os = ""
     r = 0
     it = iterations/1000
     index = 0
     for x in range((len(self.memory))-1000, (len(self.memory))):
       t = self.memory[x]
       r += t['reward']
+      for obs in t['observation']:
+        os += str(obs) + ","
+      os += "\n"
     file = self.model.model_directory + "/plot.txt"
     try:
       f = open(file, "r")
@@ -191,4 +195,8 @@ class DQN:
     f = open(file, "a+")
     f.write(str(index)+ "," + str(r) + "\n")
     f.close()
+
+    f = open(self.model.model_directory + "/observations.txt", "a+")
+    f.write(os)
+    f.close
     pass
