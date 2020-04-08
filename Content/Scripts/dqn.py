@@ -23,7 +23,7 @@ class DQN:
     self.startTraining = False
 
     # memory 
-    self.memory = deque(maxlen=dqn_params['memory_capacity'])
+    self.memory = deque(maxlen=1000)
 
     #PER memory
     self.per_memory = Memory(dqn_params['memory_capacity'])
@@ -154,12 +154,6 @@ class DQN:
       # Update priority
       self.per_memory.batch_update(tree_idx, absolute_errors)
 
-
-      #absolute_errors = np.abs(target_old - target)outside sample?
-      #self.per_memory.batch_update(tree_idx, absolute_errors)
-
-      
-
       self.model.train_step(Xs, ys, actions)
 
 
@@ -174,12 +168,13 @@ class DQN:
     r = 0
     it = iterations/1000
     index = 0
-    for x in range((len(self.memory))-1000, (len(self.memory))):
+    for x in range(len(self.memory)):
       t = self.memory[x]
       r += t['reward']
-      for obs in t['observation']:
-        os += str(obs) + ","
-      os += "\n"
+      #For writing observations to file to use to calculate means and standarddiviations
+      #for obs in t['observation']:
+      #  os += str(obs) + ","
+      #os += "\n"
     file = self.model.model_directory + "/plot.txt"
     try:
       f = open(file, "r")
@@ -196,7 +191,8 @@ class DQN:
     f.write(str(index)+ "," + str(r) + "\n")
     f.close()
 
-    f = open(self.model.model_directory + "/observations.txt", "a+")
-    f.write(os)
-    f.close
+    #For writing observations to file to use to calculate means and standarddiviations
+    #f = open(self.model.model_directory + "/observations.txt", "a+")
+    #f.write(os)
+    #f.close
     pass

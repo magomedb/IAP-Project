@@ -32,6 +32,7 @@ class CNN:
     self.num_hidden = params['num_hidden']
     self.hidden_size = params['hidden_size']
     self.hidden_size2 = params['hidden_size2']
+    self.hidden_size3 = params['hidden_size3']
 
     self.session = self.create_model()
 
@@ -58,16 +59,22 @@ class CNN:
       self.b2 = tf.get_variable("b2", shape=b2shape, initializer = tf.constant_initializer(0.0))
 
     with tf.name_scope("Layer3") as scope:
-      W3shape = [self.hidden_size2, self.hidden_size2]
+      W3shape = [self.hidden_size2, self.hidden_size3]
       self.W3 = tf.get_variable("W3", shape=W3shape,)
-      b3shape = [1, self.hidden_size2]
+      b3shape = [1, self.hidden_size3]
       self.b3 = tf.get_variable("b3", shape=b3shape, initializer = tf.constant_initializer(0.0))
 
-    with tf.name_scope("OutputLayer") as scope:
-      Ushape = [self.hidden_size2, self.num_actions]
-      self.U = tf.get_variable("U", shape=Ushape)
-      b4shape = [1, self.num_actions]
+    with tf.name_scope("Layer4") as scope:
+      W4shape = [self.hidden_size3, self.hidden_size3]
+      self.W4 = tf.get_variable("W4", shape=W4shape,)
+      b4shape = [1, self.hidden_size3]
       self.b4 = tf.get_variable("b4", shape=b4shape, initializer = tf.constant_initializer(0.0))
+
+    with tf.name_scope("OutputLayer") as scope:
+      Ushape = [self.hidden_size3, self.num_actions]
+      self.U = tf.get_variable("U", shape=Ushape)
+      b5shape = [1, self.num_actions]
+      self.b5 = tf.get_variable("b5", shape=b5shape, initializer = tf.constant_initializer(0.0))
 
     xW = tf.matmul(input_obs, self.W1)
     h = tf.tanh(tf.add(xW, self.b1))
@@ -78,10 +85,13 @@ class CNN:
     xW = tf.matmul(h, self.W3)
     h = tf.tanh(tf.add(xW, self.b3))
 
-    hU = tf.matmul(h, self.U)
-    out = tf.add(hU, self.b4)
+    xW = tf.matmul(h, self.W4)
+    h = tf.tanh(tf.add(xW, self.b4))
 
-    reg = self.reg * (tf.reduce_sum(tf.square(self.W1)) + tf.reduce_sum(tf.square(self.W2)) + tf.reduce_sum(tf.square(self.W3)) + tf.reduce_sum(tf.square(self.U)))
+    hU = tf.matmul(h, self.U)
+    out = tf.add(hU, self.b5)
+
+    reg = self.reg * (tf.reduce_sum(tf.square(self.W1)) + tf.reduce_sum(tf.square(self.W2)) + tf.reduce_sum(tf.square(self.W3)) + tf.reduce_sum(tf.square(self.W4)) + tf.reduce_sum(tf.square(self.U)))
     #ue.log(str(W1))
     #ue.log(str(b1))
     #ue.log(str(W2))
@@ -93,6 +103,7 @@ class CNN:
     ue.log('model values created')
     return out, reg
 
+#not used
   def loadnn(self, input_placeholder, sess):
     model_loaded = False
     out = None
