@@ -33,7 +33,9 @@ class CNN:
     self.hidden_size = params['hidden_size']
     self.hidden_size2 = params['hidden_size2']
     self.hidden_size3 = params['hidden_size3']
-
+    self.hidden_layers = params['hidden_layers']
+    self.W = []
+    self.b = []
     self.session = self.create_model()
 
 
@@ -103,6 +105,62 @@ class CNN:
     ue.log('model values created')
     return out, reg
 
+  def dnn(self, input_obs):
+    with tf.name_scope("Layer1") as scope:
+      W1shape = [self.observation_shape, self.hidden_layers[0]]
+      self.W.append(tf.get_variable("W1", shape=W1shape,))
+      b1shape = [1, self.hidden_layers[0]]
+      self.b.append(tf.get_variable("b1", shape=b1shape, initializer = tf.constant_initializer(0.0)))
+
+    for i in range(len(self.hidden_layers)-1):
+        scopeName = "Layer" + str(i+2)
+        WName = "W" + str(i+2)
+        bName = "b" + str(i+2)
+        with tf.name_scope(scopeName) as scope:
+            Wshape = [self.hidden_layers[i], self.hidden_layers[i+1]]
+            self.W.append(tf.get_variable(WName, shape=Wshape,))
+            bshape = [1, self.hidden_layers[i+1]]
+            self.b.append(tf.get_variable(bName, shape=bshape, initializer = tf.constant_initializer(0.0)))
+    
+    scopeName = "Layer" + str(len(self.hidden_layers)+1)
+    WName = "W" + str(len(self.hidden_layers)+1)
+    bName = "b" + str(len(self.hidden_layers)+1)
+    with tf.name_scope(scopeName) as scope:
+      Wshape = [self.hidden_layers[len(self.hidden_layers)-1], self.hidden_layers[len(self.hidden_layers)-1]]
+      self.W.append(tf.get_variable(WName, shape=Wshape,))
+      b4shape = [1, self.hidden_layers[len(self.hidden_layers)-1]]
+      self.b.append(tf.get_variable(bName, shape=b4shape, initializer = tf.constant_initializer(0.0)))
+
+    with tf.name_scope("OutputLayer") as scope:
+      Ushape = [self.hidden_layers[len(self.hidden_layers)-1], self.num_actions]
+      self.U = tf.get_variable("U", shape=Ushape)
+      boshape = [1, self.num_actions]
+      self.bo = tf.get_variable("bo", shape=boshape, initializer = tf.constant_initializer(0.0))
+
+    xW = tf.matmul(input_obs, self.W[0])
+    h = tf.tanh(tf.add(xW, self.b[0]))
+    regCalc = tf.reduce_sum(tf.square(self.W[0]))
+    for i in range(len(self.W)-1):
+        xW = tf.matmul(h, self.W[i+1])
+        h = tf.tanh(tf.add(xW, self.b[i+1]))
+        regCalc += tf.reduce_sum(tf.square(self.W[i+1]))
+
+    hU = tf.matmul(h, self.U)
+    out = tf.add(hU, self.bo)
+    regCalc += tf.reduce_sum(tf.square(self.U))
+
+    reg = self.reg * regCalc
+    #ue.log(str(W1))
+    #ue.log(str(b1))
+    #ue.log(str(W2))
+    #ue.log(str(b2))
+    #ue.log(str(W3))
+    #ue.log(str(b3))
+    #ue.log(str(U))
+    #ue.log(str(b4))
+    ue.log('model values created')
+    return out, reg
+
 #not used
   def loadnn(self, input_placeholder, sess):
     model_loaded = False
@@ -160,7 +218,7 @@ class CNN:
     session = tf.Session()
 
     self.input_placeholder, self.labels_placeholder, self.actions_placeholder = self.add_placeholders()
-    outputs, reg = self.nn(self.input_placeholder)
+    outputs, reg = self.dnn(self.input_placeholder)
 
     self.predictions = outputs
 
@@ -220,3 +278,4 @@ class CNN:
     #ue.log(str(self.session.run(self.W2)))#test values
     ue.log("Saved model: "+str(self.model_path))
     pass
+
