@@ -16,14 +16,6 @@ class ExampleAPI(TFPluginAPI):
 		pass
 
 	def setupModel(self, jsonInput):
-		#self.sess = tf.InteractiveSession()
-		#self.graph = tf.get_default_graph()
-
-		#self.x = tf.placeholder(tf.float32)
-		
-		#self.paddleY = tf.placeholder(tf.float32)
-		#self.ballXY = tf.placeholder(tf.float32)
-		#self.score = tf.placeholder(tf.float32)
 		jsonArr = jsonInput.split(",")
 		ue.log(str(jsonArr))
 		self.iterations = 0
@@ -43,7 +35,6 @@ class ExampleAPI(TFPluginAPI):
 
 		DEFAULT_LEARNING_RATE = float(jsonArr[7])
 		DEFAULT_REGULARIZATION = 0.001
-		DEFAULT_NUM_HIDDEN = 2 # not used in tensorflow implementation
 		layer_amount = int(jsonArr[9])
 		hidden_layers = []
 		start = len(jsonArr) - layer_amount

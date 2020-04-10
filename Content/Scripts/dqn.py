@@ -187,12 +187,12 @@ class DQN:
     except:
       index = 1
     ue.log("Saved: " + str(index) +  "," + str(r) + " memlen: " + str(len(self.memory)) + ", Epislon: " + str(self.current_epsilon))
-    #f = open(file, "a+")
-    #f.write(str(index)+ "," + str(r) + "\n")
-    #f.close()
+    f = open(file, "a+")
+    f.write(str(index)+ "," + str(r) + "\n")
+    f.close()
 
     #For writing observations to file to use to calculate means and standarddiviations
-    f = open(self.model.model_directory + "/observations.txt", "a+")
-    f.write(os)
-    f.close
+    #f = open(self.model.model_directory + "/observations.txt", "a+")
+    #f.write(os)
+    #f.close
     pass
