@@ -27,6 +27,7 @@ class CNN:
     self.observation_shape = observation_shape[0]
     logging.info('Initialized with params: {}'.format(params))
 
+    self.use_images = params['use_images']
     self.lr = params['lr']
     self.reg = params['reg']
     self.hidden_layers = params['hidden_layers']

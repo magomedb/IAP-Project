@@ -51,7 +51,7 @@ class ExampleAPI(TFPluginAPI):
 		self.num_actions = int(jsonArr[3])
 
 		self.agent_params = {'episodes': DEFAULT_EPISODES, 'steps': DEFAULT_STEPS, 'environment': DEFAULT_ENVIRONMENT, 'run_id': 1}
-		self.cnn_params = {'lr': LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION,'hidden_layers':hidden_layers,'mini_batch_size': MINI_BATCH_SIZE}
+		self.cnn_params = {'lr': LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION,'hidden_layers':hidden_layers,'mini_batch_size': MINI_BATCH_SIZE,'use_images': USE_IMAGES}
 		self.dqn_params = {'memory_capacity': MEMORY_CAPACITY,'epsilon': EPSILON,'gamma': DEFAULT_GAMMA,'mini_batch_size': MINI_BATCH_SIZE,'decay_rate': DECAY_RATE,'epsilon_min': EPSILON_MIN,'use_ddqn': USE_DDQN,'print_obs': PRINT_OBS,'print_reward': PRINT_REWARD,'use_images': USE_IMAGES}
 		ue.log(str(self.dqn_params))
 		ue.log(str(self.cnn_params))
