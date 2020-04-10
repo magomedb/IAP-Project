@@ -64,8 +64,6 @@ class ExampleAPI(TFPluginAPI):
 				self.sd = [float(i) for i in sdList]
 		except:
 			ue.log("You need to fill in means and standard deviations if you are going to use z-score normalizing")
-		ue.log(str(self.means))
-		ue.log(str(self.sd))
 
 
 		self.agent_params = {'episodes': DEFAULT_EPISODES, 'steps': DEFAULT_STEPS, 'environment': DEFAULT_ENVIRONMENT, 'run_id': 1}
