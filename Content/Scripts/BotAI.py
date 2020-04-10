@@ -40,7 +40,7 @@ class ExampleAPI(TFPluginAPI):
 		USE_IMAGES = int(jsonArr[13])
 
 		LEARNING_RATE = float(jsonArr[7])
-		layer_amount = int(jsonArr[14])
+		layer_amount = int(jsonArr[17])
 		hidden_layers = []
 		start = len(jsonArr) - layer_amount
 
@@ -49,6 +49,24 @@ class ExampleAPI(TFPluginAPI):
 
 		self.train_model = int(jsonArr[1])
 		self.num_actions = int(jsonArr[3])
+
+		self.means = []
+		self.sd = []
+		self.use_zscore = int(jsonArr[14])
+		meansString = str(jsonArr[15])
+		sdString = str(jsonArr[16])
+		try:
+			if self.use_zscore == 1:
+				meansList = meansString.split("|")
+				sdList = sdString.split("|")
+                #need to convert array of string to array of floats
+				self.means = [float(i) for i in meansList]
+				self.sd = [float(i) for i in sdList]
+		except:
+			ue.log("You need to fill in means and standard deviations if you are going to use z-score normalizing")
+		ue.log(str(self.means))
+		ue.log(str(self.sd))
+
 
 		self.agent_params = {'episodes': DEFAULT_EPISODES, 'steps': DEFAULT_STEPS, 'environment': DEFAULT_ENVIRONMENT, 'run_id': 1}
 		self.cnn_params = {'lr': LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION,'hidden_layers':hidden_layers,'mini_batch_size': MINI_BATCH_SIZE,'use_images': USE_IMAGES}
@@ -68,9 +86,7 @@ class ExampleAPI(TFPluginAPI):
 
 		#self.means = [45.10171524867664, 2515.6152058823905, 1.2756699421721667, 340.05399503555975, 1523.8039178279241, 1531.5614334074655, 1501.987002626419, 1480.2789580955505, 1466.3915354493458, 1485.4157070058186, 1488.6043882811864, 1478.684959236145, 1477.0602635631562, 1482.3246735661824, 1487.8680586878459, 1516.2443011096318, 1523.8039237890243, 0.8658333333333333, 8723.348632493336, 117.45349481709798, 9890.684453145344, 174.47253437042235, 9996.169818725586, 179.83003067334494]
 		#self.sd = [2089.1286442845894, 2010277.4934772076, 10493.032393773728, 32043.8041775927, 2028527.2568337375, 2021956.1270421555, 1985549.9148059473, 1948318.4015361755, 1919737.4084812927, 1942997.8872622992, 1977754.6686598395, 1975682.4669874315, 1978499.8754247418, 1981972.5892711666, 1982403.9129913272, 2023941.1473031372, 2028527.2556589583, 4.018936833274738, 6919862.836880409, 15822.591556899479, 680448.762580585, 1699.2267270349653, 18223.64626244226, 48.01285669463955]
-		self.means = [45.0717110799732, 2447.8929706197464, 3.74070544325926, 1490.4008984301431, 1456.354687444142, 1494.1618114403316, 1492.8436654570444, 1498.8283476292747, 1443.680688087191, 1490.4008905789512, 8735.875969903469, 117.2634552481515, 9887.840763203212, 174.2949338280814, 9997.659838378906, 179.89558674621583]
-		self.sd = [2344.856102330476, 2011830.5842001913, 9800.033581368009, 2054003.769056988, 1967379.3959480862, 1990132.9755433355, 1958401.2946250923, 2013537.212580724, 1974069.5399232474, 2054003.7684572826, 6669498.576617268, 15913.078338011028, 698212.7759129503, 1763.2920645488573, 9251.814230709724, 29.339087941504033]
-
+		
 		#fill our deque so our input size is always the same
 		for x in range(0, self.memory_capacity):
 			self.inputQ.append(null_input)
@@ -86,8 +102,10 @@ class ExampleAPI(TFPluginAPI):
 
 		#make a 1D stack of current input
 		observation = jsonInput['percept']
+
         #make observations into z-score
-		for i in range(len(observation)):
+		if self.use_zscore == 1:
+			for i in range(len(observation)):
 				observation[i] = (observation[i]-self.means[i])/self.sd[i]
 
 		reward = jsonInput['reward']
