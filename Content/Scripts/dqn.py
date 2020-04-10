@@ -20,9 +20,15 @@ class DQN:
     self.decay_rate = dqn_params['decay_rate']
     self.epsilon_min = dqn_params['epsilon_min']
     self.current_epsilon = self.epsilon
+
+    self.use_ddqn = dqn_params['use_ddqn']
+    self.print_obs = dqn_params['print_obs']
+    self.print_reward = dqn_params['print_reward']
+    self.use_images = dqn_params['use_images']
+
     self.startTraining = False
 
-    # memory 
+    #memory for printing reward and observations  
     self.memory = deque(maxlen=1000)
 
     #PER memory
@@ -31,7 +37,9 @@ class DQN:
     # initialize network
     self.model = CNN(folder, num_actions, observation_shape, cnn_params)
     print("model initialized")
-    #self.target_model = CNN(folder, num_actions, observation_shape, cnn_params)
+
+    if self.use_ddqn == 1:
+        self.target_model = CNN(folder, num_actions, observation_shape, cnn_params)
 
   def select_action(self, observation, iterations):
     """
@@ -104,7 +112,9 @@ class DQN:
       target = self.model.predict(old_states)
       target_old = np.array(target)
       target_next = self.model.predict(new_states)
-      #target_val = self.target_model.predict(new_states)
+      target_val = 0
+      if self.use_ddqn:
+        target_val = self.target_model.predict(new_states)
       #ue.log(str(target_next_test))
       Xs = []
       ys = []
@@ -114,21 +124,17 @@ class DQN:
         y_j = mini_batch[i]['reward']
         # for nonterminals, add gamma*max_a(Q(phi_{j+1})) term to y_j
         if not mini_batch[i]['is_done']:
-          #old_observation = mini_batch[0]['observation']
-          #old_obs = np.array([old_observation])
-          #target = self.model.predict(old_obs)
-
-          #new_observation = sample['new_observation']
-          #new_obs = np.array([new_observation])
-          #q_new_values = self.model.predict(new_obs)#target next
           q_new_values = target_next[i]
-          #target_val = self.target_model.predict(new_obs)
 
           action = np.max(q_new_values)
           actionIndex = np.argmax(q_new_values)
 
           #y_j += self.gamma*action
-          y_j += self.gamma*target_next[i][actionIndex]
+          if self.use_ddqn == 1:
+            y_j += self.gamma*target_val[i][actionIndex]
+          else:
+            y_j += self.gamma*target_next[i][actionIndex]
+        
 
         action = np.zeros(self.num_actions)
         action[mini_batch[i]['action']] = 1
@@ -168,31 +174,35 @@ class DQN:
     r = 0
     it = iterations/1000
     index = 0
-    for x in range(len(self.memory)):
-      t = self.memory[x]
-      r += t['reward']
-      #For writing observations to file to use to calculate means and standarddiviations
-      #for obs in t['observation']:
-      #  os += str(obs) + ","
-      #os += "\n"
-    file = self.model.model_directory + "/plot.txt"
-    try:
-      f = open(file, "r")
-      lines = f.read().splitlines()
-      last_line = lines[-1]
-      #ue.log(str(last_line))
-      index = int(str(last_line.split(",")[0])) + 1
-      #ue.log(index)
-      f.close()
-    except:
-      index = 1
-    ue.log("Saved: " + str(index) +  "," + str(r) + " memlen: " + str(len(self.memory)) + ", Epislon: " + str(self.current_epsilon))
-    f = open(file, "a+")
-    f.write(str(index)+ "," + str(r) + "\n")
-    f.close()
+    if self.print_obs == 1 or self.print_reward == 1:
+        for x in range(len(self.memory)):
+            t = self.memory[x]
+            r += t['reward']
+            #For writing observations to file to use to calculate means and standarddiviations
+            if self.print_obs == 1 and iterations > 1:
+                for obs in t['observation']:
+                    os += str(obs) + ","
+                os += "\n"
+        if self.print_reward == 1:
+            file = self.model.model_directory + "/plot.txt"
+            try:
+                f = open(file, "r")
+                lines = f.read().splitlines()
+                last_line = lines[-1]
+                #ue.log(str(last_line))
+                index = int(str(last_line.split(",")[0])) + 1
+                #ue.log(index)
+                f.close()
+            except:
+                index = 1
+            ue.log("Saved: " + str(index) +  ", Reward: " + str(r) + ", Epislon: " + str(self.current_epsilon))
+            f = open(file, "a+")
+            f.write(str(index)+ "," + str(r) + "\n")
+            f.close()
 
-    #For writing observations to file to use to calculate means and standarddiviations
-    #f = open(self.model.model_directory + "/observations.txt", "a+")
-    #f.write(os)
-    #f.close
+        #For writing observations to file to use to calculate means and standarddiviations
+        if self.print_obs == 1:
+            f = open(self.model.model_directory + "/observations.txt", "a+")
+            f.write(os)
+            f.close
     pass

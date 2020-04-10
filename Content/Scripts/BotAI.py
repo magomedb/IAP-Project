@@ -20,39 +20,41 @@ class ExampleAPI(TFPluginAPI):
 		ue.log(str(jsonArr))
 		self.iterations = 0
 
-		DEFAULT_EPSILON = float(jsonArr[4])
-		DECAY_RATE = float(jsonArr[5])
-		EPSILON_MIN = float(jsonArr[6])
-
 		DEFAULT_EPISODES = 2000
 		DEFAULT_STEPS = 500 
 		DEFAULT_ENVIRONMENT = 'BOT-UE4'
 
-		DEFAULT_MEMORY_CAPACITY = 200000
 		DEFAULT_GAMMA = 0.9
-		DEFAULT_MINI_BATCH_SIZE = int(jsonArr[8])
-
-
-		DEFAULT_LEARNING_RATE = float(jsonArr[7])
 		DEFAULT_REGULARIZATION = 0.001
-		layer_amount = int(jsonArr[9])
+
+		EPSILON = float(jsonArr[4])
+		DECAY_RATE = float(jsonArr[5])
+		EPSILON_MIN = float(jsonArr[6])
+
+		MEMORY_CAPACITY = int(jsonArr[8])
+		MINI_BATCH_SIZE = int(jsonArr[9])
+
+		USE_DDQN = int(jsonArr[10])
+		PRINT_OBS = int(jsonArr[11])
+		PRINT_REWARD = int(jsonArr[12])
+		USE_IMAGES = int(jsonArr[13])
+
+		LEARNING_RATE = float(jsonArr[7])
+		layer_amount = int(jsonArr[14])
 		hidden_layers = []
 		start = len(jsonArr) - layer_amount
 
 		for i in range(layer_amount):
 				hidden_layers.append(int(jsonArr[start+i]))
 
-		DEFAULT_HIDDEN_SIZE = 128
-		DEFAULT_HIDDEN_SIZE2 = 256
-		DEFAULT_HIDDEN_SIZE3 = 256
-
 		self.train_model = int(jsonArr[1])
 		self.num_actions = int(jsonArr[3])
 
 		self.agent_params = {'episodes': DEFAULT_EPISODES, 'steps': DEFAULT_STEPS, 'environment': DEFAULT_ENVIRONMENT, 'run_id': 1}
-		self.cnn_params = {'lr': DEFAULT_LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION, 'num_hidden':DEFAULT_NUM_HIDDEN, 'hidden_size':DEFAULT_HIDDEN_SIZE, 'hidden_size2':DEFAULT_HIDDEN_SIZE2,'hidden_size3':DEFAULT_HIDDEN_SIZE3,'hidden_layers':hidden_layers,'mini_batch_size': DEFAULT_MINI_BATCH_SIZE}
-		self.dqn_params = {'memory_capacity':DEFAULT_MEMORY_CAPACITY, 'epsilon':DEFAULT_EPSILON, 'gamma':DEFAULT_GAMMA,'mini_batch_size':DEFAULT_MINI_BATCH_SIZE, 'decay_rate': DECAY_RATE, 'epsilon_min': EPSILON_MIN}
-
+		self.cnn_params = {'lr': LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION,'hidden_layers':hidden_layers,'mini_batch_size': MINI_BATCH_SIZE}
+		self.dqn_params = {'memory_capacity': MEMORY_CAPACITY,'epsilon': EPSILON,'gamma': DEFAULT_GAMMA,'mini_batch_size': MINI_BATCH_SIZE,'decay_rate': DECAY_RATE,'epsilon_min': EPSILON_MIN,'use_ddqn': USE_DDQN,'print_obs': PRINT_OBS,'print_reward': PRINT_REWARD,'use_images': USE_IMAGES}
+		ue.log(str(self.dqn_params))
+		ue.log(str(self.cnn_params))
 		#use collections to manage a x frames buffer of input
 		self.memory_capacity = 200
 		self.inputQ = collections.deque(maxlen=self.memory_capacity)

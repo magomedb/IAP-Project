@@ -29,10 +29,6 @@ class CNN:
 
     self.lr = params['lr']
     self.reg = params['reg']
-    self.num_hidden = params['num_hidden']
-    self.hidden_size = params['hidden_size']
-    self.hidden_size2 = params['hidden_size2']
-    self.hidden_size3 = params['hidden_size3']
     self.hidden_layers = params['hidden_layers']
     self.W = []
     self.b = []
