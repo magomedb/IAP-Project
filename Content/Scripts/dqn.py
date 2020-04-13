@@ -44,7 +44,7 @@ class DQN:
         self.time_step += 1
         #ue.log(str(self.current_epsilon))
         
-    if random.random() < self.current_epsilon: 
+    if random.random() < self.current_epsilon:
       # with epsilon probability select a random action 
       action = np.random.randint(0, self.num_actions)
     else:
