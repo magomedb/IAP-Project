@@ -91,7 +91,7 @@ class ExampleAPI(TFPluginAPI):
 			self.actionQ.append(0)
 
 		return {'model created':True}
-		
+
 	#expected optional api: parse input object and return a result object, which will be converted to json for UE4
 	def onJsonInput(self, jsonInput):
 
@@ -108,7 +108,6 @@ class ExampleAPI(TFPluginAPI):
 
 		reward = jsonInput['reward']
 		#ue.log("Percept: " + str(observation) + " reward: " + str(reward))
-
 		#convert to list and set as x placeholder
 		#feed_dict = {self.x: stackedList}
 		#new_observation, reward, done, _ = env.step(action)
@@ -146,6 +145,7 @@ class ExampleAPI(TFPluginAPI):
 
 		#return selected action
 		return {'action':float(action)}
+
 
 	def saveModel(self, jsonInput):
 	    self.model.model.saveModel(self.inputQ, self.actionQ)

@@ -2,6 +2,8 @@ import tensorflow as tf
 import numpy as np
 import logging
 import unreal_engine as ue
+import upypip as pip
+from PIL import Image
 
 class CNN:
   """
@@ -42,7 +44,6 @@ class CNN:
     actions_placeholder = tf.placeholder(tf.float32, shape=(None, self.num_actions))
 
     return input_placeholder, labels_placeholder, actions_placeholder
-
 
   def nn(self, input_obs):
     with tf.name_scope("Layer1") as scope:
