@@ -46,60 +46,66 @@ class CNN:
     return input_placeholder, labels_placeholder, actions_placeholder
 
   def nn(self, input_obs):
+    ue.log(str('CNN created.'))
+    input_obs = tf.reshape(input_obs, shape=[-1, 12, 12, 1])
+    with tf.name_scope("ConvolutionalLayer1") as scope:
+  #   conv1 = self.conv2d(input_obs, convolutional_weights['wc1'], convolutional_biases['bc1'])
+      conv1 = tf.layers.conv2d(inputs = input_obs, filters = 32, kernel_size = 2, strides = 2, padding = 'SAME', activation = tf.nn.relu)
+      conv1 = tf.layers.max_pooling2d(inputs = conv1, pool_size = [2,2], strides = 2)
+  #   conv1 = self.maxpool2d(conv1, k=2)
+
+    with tf.name_scope("ConvolutionalLayer2") as scope:
+  #   conv2 = self.conv2d(conv1, convolutional_weights['wc2'], convolutional_biases['bc2'])
+      conv2 = tf.layers.conv2d(inputs = conv1, filters = 32, kernel_size = 2, strides = 2, padding = 'SAME', activation = tf.nn.relu)
+      conv2 = tf.layers.max_pooling2d(inputs = conv2, pool_size = [2, 2], strides = 2)
+  #   conv2 = self.maxpool2d(conv2, k=2)
+      conv2 = tf.contrib.layers.flatten(conv2)
+
     with tf.name_scope("Layer1") as scope:
-      W1shape = [self.observation_shape, self.hidden_size]
-      self.W1 = tf.get_variable("W1", shape=W1shape,)
-      b1shape = [1, self.hidden_size]
-      self.b1 = tf.get_variable("b1", shape=b1shape, initializer = tf.constant_initializer(0.0))
+      W1shape = [32, self.hidden_layers[0]]
+      self.W.append(tf.get_variable("W1", shape=W1shape,))
+      b1shape = [1, self.hidden_layers[0]]
+      self.b.append(tf.get_variable("b1", shape=b1shape, initializer = tf.constant_initializer(0.0)))
 
-    with tf.name_scope("Layer2") as scope:
-      W2shape = [self.hidden_size, self.hidden_size2]
-      self.W2 = tf.get_variable("W2", shape=W2shape,)
-      b2shape = [1, self.hidden_size2]
-      self.b2 = tf.get_variable("b2", shape=b2shape, initializer = tf.constant_initializer(0.0))
+    for i in range(len(self.hidden_layers)-1):
+        scopeName = "Layer" + str(i+2)
+        WName = "W" + str(i+2)
+        bName = "b" + str(i+2)
+        with tf.name_scope(scopeName) as scope:
+            Wshape = [self.hidden_layers[i], self.hidden_layers[i+1]]
+            self.W.append(tf.get_variable(WName, shape=Wshape,))
+            bshape = [1, self.hidden_layers[i+1]]
+            self.b.append(tf.get_variable(bName, shape=bshape, initializer = tf.constant_initializer(0.0)))
+    
+    scopeName = "Layer" + str(len(self.hidden_layers)+1)
+    WName = "W" + str(len(self.hidden_layers)+1)
+    bName = "b" + str(len(self.hidden_layers)+1)
 
-    with tf.name_scope("Layer3") as scope:
-      W3shape = [self.hidden_size2, self.hidden_size3]
-      self.W3 = tf.get_variable("W3", shape=W3shape,)
-      b3shape = [1, self.hidden_size3]
-      self.b3 = tf.get_variable("b3", shape=b3shape, initializer = tf.constant_initializer(0.0))
-
-    with tf.name_scope("Layer4") as scope:
-      W4shape = [self.hidden_size3, self.hidden_size3]
-      self.W4 = tf.get_variable("W4", shape=W4shape,)
-      b4shape = [1, self.hidden_size3]
-      self.b4 = tf.get_variable("b4", shape=b4shape, initializer = tf.constant_initializer(0.0))
+    with tf.name_scope(scopeName) as scope:
+      Wshape = [self.hidden_layers[len(self.hidden_layers)-1], self.hidden_layers[len(self.hidden_layers)-1]]
+      self.W.append(tf.get_variable(WName, shape=Wshape,))
+      b4shape = [1, self.hidden_layers[len(self.hidden_layers)-1]]
+      self.b.append(tf.get_variable(bName, shape=b4shape, initializer = tf.constant_initializer(0.0)))
 
     with tf.name_scope("OutputLayer") as scope:
-      Ushape = [self.hidden_size3, self.num_actions]
+      Ushape = [self.hidden_layers[len(self.hidden_layers)-1], self.num_actions]
       self.U = tf.get_variable("U", shape=Ushape)
-      b5shape = [1, self.num_actions]
-      self.b5 = tf.get_variable("b5", shape=b5shape, initializer = tf.constant_initializer(0.0))
+      boshape = [1, self.num_actions]
+      self.bo = tf.get_variable("bo", shape=boshape, initializer = tf.constant_initializer(0.0))
 
-    xW = tf.matmul(input_obs, self.W1)
-    h = tf.tanh(tf.add(xW, self.b1))
-
-    xW = tf.matmul(h, self.W2)
-    h = tf.tanh(tf.add(xW, self.b2))
-
-    xW = tf.matmul(h, self.W3)
-    h = tf.tanh(tf.add(xW, self.b3))
-
-    xW = tf.matmul(h, self.W4)
-    h = tf.tanh(tf.add(xW, self.b4))
+    xW = tf.matmul(conv2, self.W[0])
+    h = tf.tanh(tf.add(xW, self.b[0]))
+    regCalc = tf.reduce_sum(tf.square(self.W[0]))
+    for i in range(len(self.W)-1):
+        xW = tf.matmul(h, self.W[i+1])
+        h = tf.tanh(tf.add(xW, self.b[i+1]))
+        regCalc += tf.reduce_sum(tf.square(self.W[i+1]))
 
     hU = tf.matmul(h, self.U)
-    out = tf.add(hU, self.b5)
+    out = tf.add(hU, self.bo)
+    regCalc += tf.reduce_sum(tf.square(self.U))
 
-    reg = self.reg * (tf.reduce_sum(tf.square(self.W1)) + tf.reduce_sum(tf.square(self.W2)) + tf.reduce_sum(tf.square(self.W3)) + tf.reduce_sum(tf.square(self.W4)) + tf.reduce_sum(tf.square(self.U)))
-    #ue.log(str(W1))
-    #ue.log(str(b1))
-    #ue.log(str(W2))
-    #ue.log(str(b2))
-    #ue.log(str(W3))
-    #ue.log(str(b3))
-    #ue.log(str(U))
-    #ue.log(str(b4))
+    reg = self.reg * regCalc
     ue.log('model values created')
     return out, reg
 
@@ -216,7 +222,7 @@ class CNN:
     session = tf.Session()
 
     self.input_placeholder, self.labels_placeholder, self.actions_placeholder = self.add_placeholders()
-    outputs, reg = self.dnn(self.input_placeholder)
+    outputs, reg = self.nn(self.input_placeholder) if self.use_images == 1 else self.dnn(self.input_placeholder)
 
     self.predictions = outputs
 
