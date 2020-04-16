@@ -33,8 +33,13 @@ class CNN:
     self.lr = params['lr']
     self.reg = params['reg']
     self.hidden_layers = params['hidden_layers']
+    self.conv_layers = params['conv_layers']
+    self.image_width = params['image_width']
+    self.image_height = params['image_height']
+    self.color_channels = params['color_channels']
     self.W = []
     self.b = []
+    self.conv = []
     self.session = self.create_model()
 
 
@@ -47,19 +52,39 @@ class CNN:
 
   def nn(self, input_obs):
     ue.log(str('CNN created.'))
-    input_obs = tf.reshape(input_obs, shape=[-1, 12, 12, 1])
-    with tf.name_scope("ConvolutionalLayer1") as scope:
-  #   conv1 = self.conv2d(input_obs, convolutional_weights['wc1'], convolutional_biases['bc1'])
-      conv1 = tf.layers.conv2d(inputs = input_obs, filters = 32, kernel_size = 2, strides = 2, padding = 'SAME', activation = tf.nn.relu)
-      conv1 = tf.layers.max_pooling2d(inputs = conv1, pool_size = [2,2], strides = 2)
-  #   conv1 = self.maxpool2d(conv1, k=2)
+    input_obs = tf.reshape(input_obs, shape=[-1, self.image_height, self.image_width, self.color_channels])
 
-    with tf.name_scope("ConvolutionalLayer2") as scope:
-  #   conv2 = self.conv2d(conv1, convolutional_weights['wc2'], convolutional_biases['bc2'])
-      conv2 = tf.layers.conv2d(inputs = conv1, filters = 32, kernel_size = 2, strides = 2, padding = 'SAME', activation = tf.nn.relu)
-      conv2 = tf.layers.max_pooling2d(inputs = conv2, pool_size = [2, 2], strides = 2)
-  #   conv2 = self.maxpool2d(conv2, k=2)
-      conv2 = tf.contrib.layers.flatten(conv2)
+   # with tf.name_scope("ConvolutionalLayer1") as scope:
+   #   #current_activation = 'tf.nn.' + self.conv_layers[0][4]
+   #   conv1 = tf.layers.conv2d(inputs = input_obs, filters = int(self.conv_layers[0][0]), kernel_size = int(self.conv_layers[0][1]), strides = int(self.conv_layers[0][2]), padding = self.conv_layers[0][3], activation = tf.nn.relu)
+   #   conv1 = tf.layers.max_pooling2d(inputs = conv1, pool_size = [2,2], strides = 2)
+   #   self.conv.append(conv1)
+   #   #ue.log('Values: ' + str(self.conv_layers[0][0]) + ', ' + str(self.conv_layers[0][1]) + ', ' + str(self.conv_layers[0][2]) + ', ' + str(self.conv_layers[0][3]) + ', ' + str(self.conv_layers[0][4]))
+   #   ue.log(str(len(self.conv_layers)))
+   #   ue.log(str(self.conv[0]))
+    self.conv.append(input_obs)
+
+    for i in range(len(self.conv_layers)):
+        scopeName = "ConvolutionalLayer" + str(i+2)
+        #convName = "conv" + str(i+2)
+        with tf.name_scope(scopeName) as scope:
+            ue.log(str(i))
+            current_filters = int(self.conv_layers[i][0])
+            current_kernels = int(self.conv_layers[i][1])
+            current_strides = int(self.conv_layers[i][2])
+            current_padding = self.conv_layers[i][3]
+            current_activation = 'tf.nn.' + self.conv_layers[i][4]   # Need to account for activation being None
+            conv = tf.layers.conv2d(inputs = self.conv[i], filters = current_filters, kernel_size = current_kernels, strides = current_strides, padding = current_padding, activation = None)
+            #conv = tf.layers.max_pooling2d(inputs = conv, pool_size = [2,2], strides = 2)
+            self.conv.append(conv)
+            ue.log(str(self.conv[i]))
+            #ue.log('Values: ' + str(current_filters) + ', ' + str(current_kernels) + ', ' + str(current_strides) + ', ' + str(current_padding) + ', ' + str(current_activation))
+
+    
+    ue.log(str(self.conv[len(self.conv)-1]))
+    finalConv = tf.contrib.layers.flatten(self.conv[len(self.conv)-1])
+    self.conv = []
+    ue.log(str('Yeet'))
 
     with tf.name_scope("Layer1") as scope:
       W1shape = [32, self.hidden_layers[0]]
@@ -93,7 +118,7 @@ class CNN:
       boshape = [1, self.num_actions]
       self.bo = tf.get_variable("bo", shape=boshape, initializer = tf.constant_initializer(0.0))
 
-    xW = tf.matmul(conv2, self.W[0])
+    xW = tf.matmul(finalConv, self.W[0])
     h = tf.tanh(tf.add(xW, self.b[0]))
     regCalc = tf.reduce_sum(tf.square(self.W[0]))
     for i in range(len(self.W)-1):
