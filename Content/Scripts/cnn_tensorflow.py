@@ -3,7 +3,7 @@ import numpy as np
 import logging
 import unreal_engine as ue
 import upypip as pip
-from PIL import Image
+#from PIL import Image
 
 class CNN:
   """
