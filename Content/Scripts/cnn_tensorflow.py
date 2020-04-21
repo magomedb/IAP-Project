@@ -58,8 +58,11 @@ class CNN:
     input_obs = tf.reshape(input_obs, shape=[-1, self.image_height, self.image_width, self.color_channels], name="reshapedInput")
 
     with tf.name_scope("ConvolutionalLayer1") as scope:
-      #current_activation = 'tf.nn.' + self.conv_layers[0][4]
-      conv1 = tf.layers.conv2d(inputs = input_obs, filters = int(self.conv_layers[0][0]), kernel_size = int(self.conv_layers[0][1]), strides = int(self.conv_layers[0][2]), padding = self.conv_layers[0][3], activation = tf.nn.relu, name="conv1")
+      if self.conv_layers[0][4] == 1:
+          conv1 = tf.layers.conv2d(inputs = input_obs, filters = int(self.conv_layers[0][0]), kernel_size = int(self.conv_layers[0][1]), strides = int(self.conv_layers[0][2]), padding = self.conv_layers[0][3], activation = tf.nn.relu, name="conv1")
+      else:
+          conv1 = tf.layers.conv2d(inputs = input_obs, filters = int(self.conv_layers[0][0]), kernel_size = int(self.conv_layers[0][1]), strides = int(self.conv_layers[0][2]), padding = self.conv_layers[0][3], activation = None, name="conv1")
+      
       if self.use_maxpooling == 1:
           conv1 = tf.layers.max_pooling2d(inputs = conv1, pool_size = [2,2], strides = 1, name="maxpool1")
       self.conv.append(conv1)
@@ -78,8 +81,12 @@ class CNN:
             current_kernels = int(self.conv_layers[i+1][1])
             current_strides = int(self.conv_layers[i+1][2])
             current_padding = self.conv_layers[i+1][3]
-            #current_activation = 'tf.nn.' + self.conv_layers[i+1][4]   # Need to account for activation being None
-            conv = tf.layers.conv2d(inputs = self.conv[i], filters = current_filters, kernel_size = current_kernels, strides = current_strides, padding = current_padding, activation = tf.nn.relu, name=convName)
+
+            if self.conv_layers[i+1][4] == 1:
+                conv = tf.layers.conv2d(inputs = self.conv[i], filters = current_filters, kernel_size = current_kernels, strides = current_strides, padding = current_padding, activation = tf.nn.relu, name=convName)
+            else:
+                conv = tf.layers.conv2d(inputs = self.conv[i], filters = current_filters, kernel_size = current_kernels, strides = current_strides, padding = current_padding, activation = None, name=convName)
+
             if self.use_maxpooling == 1:
                 conv = tf.layers.max_pooling2d(inputs = conv, pool_size = [2,2], strides = 1, name=maxPoolName)
             self.conv.append(conv)
