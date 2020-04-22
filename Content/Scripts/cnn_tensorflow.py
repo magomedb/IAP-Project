@@ -33,8 +33,16 @@ class CNN:
     self.lr = params['lr']
     self.reg = params['reg']
     self.hidden_layers = params['hidden_layers']
+    self.conv_layers = params['conv_layers']
+    self.image_width = params['image_width']
+    self.image_height = params['image_height']
+    self.color_channels = params['color_channels']
     self.W = []
     self.b = []
+    self.conv = []
+    self.conv_kernels = []
+    self.conv_biases = []
+    self.use_maxpooling = params['use_maxpooling']
     self.session = self.create_model()
 
 
@@ -46,61 +54,109 @@ class CNN:
     return input_placeholder, labels_placeholder, actions_placeholder
 
   def nn(self, input_obs):
+    ue.log(str('CNN created.'))
+    input_obs = tf.reshape(input_obs, shape=[-1, self.image_height, self.image_width, self.color_channels], name="reshapedInput")
+
+    with tf.name_scope("ConvolutionalLayer1") as scope:
+      if self.conv_layers[0][4] == 1:
+          conv1 = tf.layers.conv2d(inputs = input_obs, filters = int(self.conv_layers[0][0]), kernel_size = int(self.conv_layers[0][1]), strides = int(self.conv_layers[0][2]), padding = self.conv_layers[0][3], activation = tf.nn.relu, name="conv1")
+      else:
+          conv1 = tf.layers.conv2d(inputs = input_obs, filters = int(self.conv_layers[0][0]), kernel_size = int(self.conv_layers[0][1]), strides = int(self.conv_layers[0][2]), padding = self.conv_layers[0][3], activation = None, name="conv1")
+      
+      if self.use_maxpooling == 1:
+          conv1 = tf.layers.max_pooling2d(inputs = conv1, pool_size = [2,2], strides = 1, name="maxpool1")
+      self.conv.append(conv1)
+      #ue.log('Values: ' + str(self.conv_layers[0][0]) + ', ' + str(self.conv_layers[0][1]) + ', ' + str(self.conv_layers[0][2]) + ', ' + str(self.conv_layers[0][3]) + ', ' + str(self.conv_layers[0][4]))
+      #ue.log(str(len(self.conv_layers)))
+      #ue.log(str(self.conv[0]))
+      #self.conv.append(input_obs)
+
+    for i in range(len(self.conv_layers)-1):
+        scopeName = "ConvolutionalLayer" + str(i+2)
+        convName = "conv" + str(i+2)
+        maxPoolName = "maxpool" + str(i+2)
+        with tf.name_scope(scopeName) as scope:
+            ue.log(str(i))
+            current_filters = int(self.conv_layers[i+1][0])
+            current_kernels = int(self.conv_layers[i+1][1])
+            current_strides = int(self.conv_layers[i+1][2])
+            current_padding = self.conv_layers[i+1][3]
+
+            if self.conv_layers[i+1][4] == 1:
+                conv = tf.layers.conv2d(inputs = self.conv[i], filters = current_filters, kernel_size = current_kernels, strides = current_strides, padding = current_padding, activation = tf.nn.relu, name=convName)
+            else:
+                conv = tf.layers.conv2d(inputs = self.conv[i], filters = current_filters, kernel_size = current_kernels, strides = current_strides, padding = current_padding, activation = None, name=convName)
+
+            if self.use_maxpooling == 1:
+                conv = tf.layers.max_pooling2d(inputs = conv, pool_size = [2,2], strides = 1, name=maxPoolName)
+            self.conv.append(conv)
+            #ue.log(str(self.conv[i]))
+            #ue.log('Values: ' + str(current_filters) + ', ' + str(current_kernels) + ', ' + str(current_strides) + ', ' + str(current_padding) + ', ' + str(current_activation))
+
+    
+    #scopeName = "ConvolutionalLayer" + str(len(self.conv_layers))
+    #convName = "conv" + str(len(self.conv_layers))
+
+    #with tf.name_scope(scopeName) as scope:
+    #    current_filters = int(self.conv_layers[len(self.conv_layers)-1][0])
+    #    current_kernels = int(self.conv_layers[len(self.conv_layers)-1][1])
+    #    current_strides = int(self.conv_layers[len(self.conv_layers)-1][2])
+    #    current_padding = self.conv_layers[len(self.conv_layers)-1][3]
+        #current_activation
+    #    conv = tf.layers.conv2d(inputs = self.conv[i], filters = current_filters, kernel_size = current_kernels, strides = current_strides, padding = current_padding, activation = tf.nn.relu, name=convName)
+        #conv = tf.layers.max_pooling2d(inputs = conv, pool_size = [2,2], strides = 2)
+    #    self.conv.append(conv)
+
+    finalConv = tf.contrib.layers.flatten(self.conv[len(self.conv)-1])
+
     with tf.name_scope("Layer1") as scope:
-      W1shape = [self.observation_shape, self.hidden_size]
-      self.W1 = tf.get_variable("W1", shape=W1shape,)
-      b1shape = [1, self.hidden_size]
-      self.b1 = tf.get_variable("b1", shape=b1shape, initializer = tf.constant_initializer(0.0))
+      W1shape = [finalConv.shape[1], self.hidden_layers[0]]
+      self.W.append(tf.get_variable("W1", shape=W1shape,))
+      b1shape = [1, self.hidden_layers[0]]
+      self.b.append(tf.get_variable("b1", shape=b1shape, initializer = tf.constant_initializer(0.0)))
 
-    with tf.name_scope("Layer2") as scope:
-      W2shape = [self.hidden_size, self.hidden_size2]
-      self.W2 = tf.get_variable("W2", shape=W2shape,)
-      b2shape = [1, self.hidden_size2]
-      self.b2 = tf.get_variable("b2", shape=b2shape, initializer = tf.constant_initializer(0.0))
+    for i in range(len(self.hidden_layers)-1):
+        scopeName = "Layer" + str(i+2)
+        WName = "W" + str(i+2)
+        bName = "b" + str(i+2)
+        with tf.name_scope(scopeName) as scope:
+            Wshape = [self.hidden_layers[i], self.hidden_layers[i+1]]
+            self.W.append(tf.get_variable(WName, shape=Wshape,))
+            bshape = [1, self.hidden_layers[i+1]]
+            self.b.append(tf.get_variable(bName, shape=bshape, initializer = tf.constant_initializer(0.0)))
+    
+    scopeName = "Layer" + str(len(self.hidden_layers)+1)
+    WName = "W" + str(len(self.hidden_layers)+1)
+    bName = "b" + str(len(self.hidden_layers)+1)
 
-    with tf.name_scope("Layer3") as scope:
-      W3shape = [self.hidden_size2, self.hidden_size3]
-      self.W3 = tf.get_variable("W3", shape=W3shape,)
-      b3shape = [1, self.hidden_size3]
-      self.b3 = tf.get_variable("b3", shape=b3shape, initializer = tf.constant_initializer(0.0))
-
-    with tf.name_scope("Layer4") as scope:
-      W4shape = [self.hidden_size3, self.hidden_size3]
-      self.W4 = tf.get_variable("W4", shape=W4shape,)
-      b4shape = [1, self.hidden_size3]
-      self.b4 = tf.get_variable("b4", shape=b4shape, initializer = tf.constant_initializer(0.0))
+    with tf.name_scope(scopeName) as scope:
+      Wshape = [self.hidden_layers[len(self.hidden_layers)-1], self.hidden_layers[len(self.hidden_layers)-1]]
+      self.W.append(tf.get_variable(WName, shape=Wshape,))
+      b4shape = [1, self.hidden_layers[len(self.hidden_layers)-1]]
+      self.b.append(tf.get_variable(bName, shape=b4shape, initializer = tf.constant_initializer(0.0)))
 
     with tf.name_scope("OutputLayer") as scope:
-      Ushape = [self.hidden_size3, self.num_actions]
+      Ushape = [self.hidden_layers[len(self.hidden_layers)-1], self.num_actions]
       self.U = tf.get_variable("U", shape=Ushape)
-      b5shape = [1, self.num_actions]
-      self.b5 = tf.get_variable("b5", shape=b5shape, initializer = tf.constant_initializer(0.0))
+      boshape = [1, self.num_actions]
+      self.bo = tf.get_variable("bo", shape=boshape, initializer = tf.constant_initializer(0.0))
 
-    xW = tf.matmul(input_obs, self.W1)
-    h = tf.tanh(tf.add(xW, self.b1))
-
-    xW = tf.matmul(h, self.W2)
-    h = tf.tanh(tf.add(xW, self.b2))
-
-    xW = tf.matmul(h, self.W3)
-    h = tf.tanh(tf.add(xW, self.b3))
-
-    xW = tf.matmul(h, self.W4)
-    h = tf.tanh(tf.add(xW, self.b4))
+    xW = tf.matmul(finalConv, self.W[0])
+    h = tf.tanh(tf.add(xW, self.b[0]))
+    regCalc = tf.reduce_sum(tf.square(self.W[0]))
+    for i in range(len(self.W)-1):
+        xW = tf.matmul(h, self.W[i+1])
+        h = tf.tanh(tf.add(xW, self.b[i+1]))
+        regCalc += tf.reduce_sum(tf.square(self.W[i+1]))
 
     hU = tf.matmul(h, self.U)
-    out = tf.add(hU, self.b5)
+    out = tf.add(hU, self.bo)
+    regCalc += tf.reduce_sum(tf.square(self.U))
 
-    reg = self.reg * (tf.reduce_sum(tf.square(self.W1)) + tf.reduce_sum(tf.square(self.W2)) + tf.reduce_sum(tf.square(self.W3)) + tf.reduce_sum(tf.square(self.W4)) + tf.reduce_sum(tf.square(self.U)))
-    #ue.log(str(W1))
-    #ue.log(str(b1))
-    #ue.log(str(W2))
-    #ue.log(str(b2))
-    #ue.log(str(W3))
-    #ue.log(str(b3))
-    #ue.log(str(U))
-    #ue.log(str(b4))
+    reg = self.reg * regCalc
     ue.log('model values created')
+    #self.conv_kernels.append(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'conv1/kernel')[0])
+
     return out, reg
 
   def dnn(self, input_obs):
@@ -216,7 +272,7 @@ class CNN:
     session = tf.Session()
 
     self.input_placeholder, self.labels_placeholder, self.actions_placeholder = self.add_placeholders()
-    outputs, reg = self.dnn(self.input_placeholder)
+    outputs, reg = self.nn(self.input_placeholder) if self.use_images == 1 else self.dnn(self.input_placeholder)
 
     self.predictions = outputs
 

@@ -24,7 +24,7 @@ class ExampleAPI(TFPluginAPI):
 		DEFAULT_STEPS = 500 
 		DEFAULT_ENVIRONMENT = 'BOT-UE4'
 
-		DEFAULT_GAMMA = 0.9
+		DEFAULT_GAMMA = 0.99
 		DEFAULT_REGULARIZATION = 0.001
 
 		EPSILON = float(jsonArr[4])
@@ -41,11 +41,22 @@ class ExampleAPI(TFPluginAPI):
 
 		LEARNING_RATE = float(jsonArr[7])
 		layer_amount = int(jsonArr[17])
+		conv_layer_amount = int(jsonArr[17+(layer_amount+1)])
+		IMAGE_WIDTH = int(jsonArr[17+(layer_amount+conv_layer_amount+2)])
+		IMAGE_HEIGHT = int(jsonArr[17+(layer_amount+conv_layer_amount+3)])
+		COLOR_CHANNELS = int(jsonArr[17+(layer_amount+conv_layer_amount+4)])
 		hidden_layers = []
-		start = len(jsonArr) - layer_amount
+		conv_layers = []
+		USE_MAXPOOLING = int(jsonArr[len(jsonArr)-1])
+		start = len(jsonArr) - (layer_amount + conv_layer_amount + 5) #PASS PÅ DENNE!
+		conv_start = len(jsonArr) - (conv_layer_amount + 4)
 
 		for i in range(layer_amount):
 				hidden_layers.append(int(jsonArr[start+i]))
+
+		for n in range(conv_layer_amount):
+		        arr = jsonArr[conv_start+n]
+		        conv_layers.append(arr.split("-"))
 
 		self.train_model = int(jsonArr[1])
 		self.num_actions = int(jsonArr[3])
@@ -67,7 +78,7 @@ class ExampleAPI(TFPluginAPI):
 
 
 		self.agent_params = {'episodes': DEFAULT_EPISODES, 'steps': DEFAULT_STEPS, 'environment': DEFAULT_ENVIRONMENT, 'run_id': 1}
-		self.cnn_params = {'lr': LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION,'hidden_layers':hidden_layers,'mini_batch_size': MINI_BATCH_SIZE,'use_images': USE_IMAGES}
+		self.cnn_params = {'lr': LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION,'hidden_layers':hidden_layers, 'conv_layers': conv_layers, 'mini_batch_size': MINI_BATCH_SIZE,'use_images': USE_IMAGES, 'image_width':IMAGE_WIDTH, 'image_height':IMAGE_HEIGHT, 'color_channels':COLOR_CHANNELS, 'use_maxpooling':USE_MAXPOOLING}
 		self.dqn_params = {'memory_capacity': MEMORY_CAPACITY,'epsilon': EPSILON,'gamma': DEFAULT_GAMMA,'mini_batch_size': MINI_BATCH_SIZE,'decay_rate': DECAY_RATE,'epsilon_min': EPSILON_MIN,'use_ddqn': USE_DDQN,'print_obs': PRINT_OBS,'print_reward': PRINT_REWARD,'use_images': USE_IMAGES}
 		ue.log(str(self.dqn_params))
 		ue.log(str(self.cnn_params))
