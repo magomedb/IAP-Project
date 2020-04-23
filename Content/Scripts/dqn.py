@@ -3,7 +3,7 @@ import random as random
 from collections import deque
 import unreal_engine as ue
 from PER import *
-from cnn_tensorflow import CNN
+from dnn import DNN
 
 # See https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf for model description
 
@@ -35,7 +35,7 @@ class DQN:
     self.per_memory = Memory(dqn_params['memory_capacity'])
 
     # initialize network
-    self.model = CNN(folder, num_actions, observation_shape, cnn_params)
+    self.model = DNN(folder, num_actions, observation_shape, cnn_params)
     print("model initialized")
 
     if self.use_ddqn == 1:

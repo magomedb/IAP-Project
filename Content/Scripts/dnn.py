@@ -5,7 +5,7 @@ import unreal_engine as ue
 import upypip as pip
 #from PIL import Image
 
-class CNN:
+class DNN:
   """
   Convolutional Neural Network model.
   """
