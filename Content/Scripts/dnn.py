@@ -3,6 +3,7 @@ import numpy as np
 import logging
 import unreal_engine as ue
 import upypip as pip
+from pathlib import Path
 #from PIL import Image
 
 class DNN:
@@ -18,6 +19,9 @@ class DNN:
     """
     self.scripts_path = ue.get_content_dir() + "Scripts"
     self.model_directory = self.scripts_path + "/models" + "/" + folder
+
+    #Create a folder if we dont have one already
+    Path(self.model_directory).mkdir(parents=True, exist_ok=True)
 
     self.modemodel_loaded = False
 
