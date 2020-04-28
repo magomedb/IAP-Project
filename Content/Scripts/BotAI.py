@@ -10,7 +10,7 @@ import numpy as np
 #part of structure taken from https://gist.github.com/arushir/04c58283d4fc00a4d6983dc92a3f1021
 from dqn import DQN
 
-class ExampleAPI(TFPluginAPI):
+class BotAI_API(TFPluginAPI):
 
 	def onSetup(self):
 		pass
@@ -173,4 +173,4 @@ class ExampleAPI(TFPluginAPI):
 #required function to get our api
 def getApi():
 	#return CLASSNAME.getInstance()
-	return ExampleAPI.getInstance()
+	return BotAI_API.getInstance()
