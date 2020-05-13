@@ -34,19 +34,16 @@ class DQN:
     #PER memory
     self.per_memory = Memory(dqn_params['memory_capacity'])
 
-    # initialize network
+    #initialize network
     self.model = DNN(folder, num_actions, observation_shape, cnn_params)
     print("model initialized")
 
+    #extra network for Double DQN
     if self.use_ddqn == 1:
         self.target_model = CNN(folder, num_actions, observation_shape, cnn_params)
 
   def select_action(self, observation, iterations):
-    """
-    Selects the next action to take based on the current state and learned Q.
-    Args:
-      observation: the current state
-    """
+    #epislon decay
     if(iterations%1000==0):
         self.current_epsilon = self.epsilon_min + (self.epsilon - self.epsilon_min) * np.exp(-self.decay_rate * self.time_step)
         self.time_step += 1
@@ -64,42 +61,24 @@ class DQN:
     return action
 
   def update_state(self, action, observation, new_observation, reward, done):
-    """
-    Stores the most recent action in the replay memory.
-    Args: 
-      action: the action taken 
-      observation: the state before the action was taken
-      new_observation: the state after the action is taken
-      reward: the reward from the action
-      done: a boolean for when the episode has terminated 
-    """
+    #this an experience that we save in memory
     transition = {'action': action,
                   'observation': observation,
                   'new_observation': new_observation,
                   'reward': reward,
                   'is_done': done}
+    #memory for observation and reward saving for outprints
     self.memory.append(transition)
+    #PER memory for observation used to train
     self.per_memory.store(transition)
-
-  def get_random_mini_batch(self):
-    """
-    Gets a random sample of transitions from the replay memory.
-    """
-    rand_idxs = random.sample(range(len(self.memory)), self.mini_batch_size)
-    mini_batch = []
-    for idx in rand_idxs:
-      mini_batch.append(self.memory[idx])
-
-    return mini_batch
 
   def train_step(self):
     """
-    Updates the model based on the mini batch
+    Updates the model based on the mini batch from PER
     """
     if self.startTraining == True:
-      #mini_batch = self.get_random_mini_batch()
       tree_idx, mini_batch  = self.per_memory.sample(self.mini_batch_size)
-      #ue.log(str(self.observation_shape[0]))
+      
       new_states = np.zeros((self.mini_batch_size, self.observation_shape[0]))
       old_states = np.zeros((self.mini_batch_size, self.observation_shape[0]))
       actionsBatch = []
@@ -115,21 +94,21 @@ class DQN:
       target_val = 0
       if self.use_ddqn:
         target_val = self.target_model.predict(new_states)
-      #ue.log(str(target_next_test))
+      
       Xs = []
       ys = []
       actions = []
 
       for i in range(self.mini_batch_size):
         y_j = mini_batch[i]['reward']
-        # for nonterminals, add gamma*max_a(Q(phi_{j+1})) term to y_j
+        
         if not mini_batch[i]['is_done']:
           q_new_values = target_next[i]
 
           action = np.max(q_new_values)
           actionIndex = np.argmax(q_new_values)
 
-          #y_j += self.gamma*action
+          
           if self.use_ddqn == 1:
             y_j += self.gamma*target_val[i][actionIndex]
           else:
@@ -152,11 +131,11 @@ class DQN:
 
       #Updateing PER bintree
       indices = np.arange(self.mini_batch_size, dtype=np.int32)
-      #ue.log(str(ys))
+      
       actionsInt = np.array(actionsBatch, dtype=int)
-      #ue.log(str(actionsInt))
+      
       absolute_errors = np.abs(target_old[indices, actionsInt]-ys[indices])
-      #ue.log(str(absolute_errors))
+      
       # Update priority
       self.per_memory.batch_update(tree_idx, absolute_errors)
 
@@ -189,9 +168,9 @@ class DQN:
                 f = open(file, "r")
                 lines = f.read().splitlines()
                 last_line = lines[-1]
-                #ue.log(str(last_line))
+                
                 index = int(str(last_line.split(",")[0])) + 1
-                #ue.log(index)
+                
                 f.close()
             except:
                 index = 1

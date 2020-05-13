@@ -33,6 +33,7 @@ class DNN:
     self.observation_shape = observation_shape[0]
     logging.info('Initialized with params: {}'.format(params))
 
+    #hyperparameters
     self.use_images = params['use_images']
     self.lr = params['lr']
     self.reg = params['reg']
@@ -146,65 +147,9 @@ class DNN:
     regCalc += tf.reduce_sum(tf.square(self.U))
 
     reg = self.reg * regCalc
-    #ue.log(str(W1))
-    #ue.log(str(b1))
-    #ue.log(str(W2))
-    #ue.log(str(b2))
-    #ue.log(str(W3))
-    #ue.log(str(b3))
-    #ue.log(str(U))
-    #ue.log(str(b4))
+    
     ue.log('model values created')
     return out, reg
-
-#not used
-  def loadnn(self, input_placeholder, sess):
-    model_loaded = False
-    out = None
-    reg = None
-    with sess.as_default():
-      try:
-        saver = tf.train.import_meta_graph(self.model_path + ".meta")
-        ue.log('meta graph imported')
-        saver.restore(sess, tf.train.latest_checkpoint(self.model_directory))
-        ue.log('graph restored')
-        model_loaded = True
-        #restore our weights
-        self.graph = tf.get_default_graph()
-        self.W1 = self.graph.get_tensor_by_name("W1:0")
-        self.b1 = self.graph.get_tensor_by_name("b1:0")
-        self.W2 = self.graph.get_tensor_by_name("W2:0")
-        self.b2 = self.graph.get_tensor_by_name("b2:0")
-        self.W3 = self.graph.get_tensor_by_name("W3:0")
-        self.b3 = self.graph.get_tensor_by_name("b3:0")
-        self.U = self.graph.get_tensor_by_name("U:0")
-        self.b4 = self.graph.get_tensor_by_name("b4:0")
-
-        xW = tf.matmul(input_placeholder, self.W1)
-        h = tf.tanh(tf.add(xW, self.b1))
-
-        xW = tf.matmul(h, self.W2)
-        h = tf.tanh(tf.add(xW, self.b2))
-
-        xW = tf.matmul(h, self.W3)
-        h = tf.tanh(tf.add(xW, self.b3))
-
-        hU = tf.matmul(h, self.U)
-        out = tf.add(hU, self.b4)
-
-        reg = self.reg * (tf.reduce_sum(tf.square(self.W1)) + tf.reduce_sum(tf.square(self.W2)) + tf.reduce_sum(tf.square(self.W3)) + tf.reduce_sum(tf.square(self.U)))
-        ue.log('Session variables restored')
-        #ue.log(str(W1))
-        #ue.log(str(b1))
-        #ue.log(str(W2))
-        #ue.log(str(b2))
-        #ue.log(str(W3))
-        #ue.log(str(b3))
-        #ue.log(str(U))
-        #ue.log(str(b4))
-      except:
-          model_loaded = False
-    return out, reg, model_loaded
 
   def create_model(self):
     """
