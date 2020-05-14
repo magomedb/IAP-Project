@@ -24,7 +24,6 @@ class DQN:
     self.use_ddqn = dqn_params['use_ddqn']
     self.print_obs = dqn_params['print_obs']
     self.print_reward = dqn_params['print_reward']
-    self.use_images = dqn_params['use_images']
 
     self.startTraining = False
 

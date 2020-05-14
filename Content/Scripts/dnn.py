@@ -34,7 +34,7 @@ class DNN:
     logging.info('Initialized with params: {}'.format(params))
 
     #hyperparameters
-    self.use_images = params['use_images']
+    self.use_cnn = params['use_cnn']
     self.lr = params['lr']
     self.reg = params['reg']
     self.hidden_layers = params['hidden_layers']
@@ -57,7 +57,7 @@ class DNN:
 
     return input_placeholder, labels_placeholder, actions_placeholder
 
-  def nn(self, input_obs):
+  def cnn(self, input_obs):
     ue.log(str('CNN created.'))
     input_obs = tf.reshape(input_obs, shape=[-1, self.image_height, self.image_width, self.color_channels], name="reshapedInput")
 
@@ -160,8 +160,8 @@ class DNN:
 
     self.input_placeholder, self.labels_placeholder, self.actions_placeholder = self.add_placeholders()
     
-    if self.use_images == 1:
-        outputs = self.nn(self.input_placeholder)
+    if self.use_cnn == 1:
+        outputs = self.cnn(self.input_placeholder)
         self.predictions = outputs
         self.q_vals = tf.reduce_sum(tf.multiply(self.predictions, self.actions_placeholder), 1)
         self.loss = tf.reduce_sum(tf.square(self.labels_placeholder - self.q_vals))

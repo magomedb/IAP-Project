@@ -34,7 +34,7 @@ class BotAI_API(TFPluginAPI):
 		USE_DDQN = int(jsonArr[10])
 		PRINT_OBS = int(jsonArr[11])
 		PRINT_REWARD = int(jsonArr[12])
-		USE_IMAGES = int(jsonArr[13])
+		USE_CNN = int(jsonArr[13])
 
 		LEARNING_RATE = float(jsonArr[7])
 		layer_amount = int(jsonArr[17])
@@ -74,8 +74,8 @@ class BotAI_API(TFPluginAPI):
 			ue.log("You need to fill in means and standard deviations if you are going to use z-score normalizing")
 
 		#prameters that we pass on to different classes
-		self.cnn_params = {'lr': LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION,'hidden_layers':hidden_layers, 'conv_layers': conv_layers, 'mini_batch_size': MINI_BATCH_SIZE,'use_images': USE_IMAGES, 'image_width':IMAGE_WIDTH, 'image_height':IMAGE_HEIGHT, 'color_channels':COLOR_CHANNELS, 'use_maxpooling':USE_MAXPOOLING}
-		self.dqn_params = {'memory_capacity': MEMORY_CAPACITY,'epsilon': EPSILON,'gamma': DEFAULT_GAMMA,'mini_batch_size': MINI_BATCH_SIZE,'decay_rate': DECAY_RATE,'epsilon_min': EPSILON_MIN,'use_ddqn': USE_DDQN,'print_obs': PRINT_OBS,'print_reward': PRINT_REWARD,'use_images': USE_IMAGES}
+		self.cnn_params = {'lr': LEARNING_RATE, 'reg': DEFAULT_REGULARIZATION,'hidden_layers':hidden_layers, 'conv_layers': conv_layers, 'mini_batch_size': MINI_BATCH_SIZE,'use_cnn': USE_CNN, 'image_width':IMAGE_WIDTH, 'image_height':IMAGE_HEIGHT, 'color_channels':COLOR_CHANNELS, 'use_maxpooling':USE_MAXPOOLING}
+		self.dqn_params = {'memory_capacity': MEMORY_CAPACITY,'epsilon': EPSILON,'gamma': DEFAULT_GAMMA,'mini_batch_size': MINI_BATCH_SIZE,'decay_rate': DECAY_RATE,'epsilon_min': EPSILON_MIN,'use_ddqn': USE_DDQN,'print_obs': PRINT_OBS,'print_reward': PRINT_REWARD}
 		ue.log(str(self.dqn_params))
 		ue.log(str(self.cnn_params))
 
